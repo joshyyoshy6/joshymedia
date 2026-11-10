@@ -100,7 +100,7 @@ window.PROJECTS = [
     title: "",
     role: "photographer",
     year: "2026",
-    description: "@sukiibaby wearing @casablancabrand",
+    description: "editorial portraits of @sukiibaby in @casablancabrand",
     folder: "sukiibaby",
     cover: "cover",
     crop: { "1": "80% 50%", "3": "65% 50%", "4": "74% 50%" },
