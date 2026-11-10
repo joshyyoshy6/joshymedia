@@ -1,4 +1,5 @@
-// Builds the home grid and project pages from projects.js + images/manifest.js.
+// Builds the home gallery, the projects grid and project pages
+// from projects.js + images/manifest.js.
 // You shouldn't need to edit this file. Text and order live in projects.js.
 
 (function () {
@@ -44,7 +45,111 @@
     return projectCount[p.client] > 1 && p.title ? p.client + " — " + p.title : p.client;
   }
 
-  // ---------- home page ----------
+  // ---------- home page: gallery ----------
+
+  // Every photo from every project, mixed: 1st photo of each project, then 2nd of each, ...
+  function galleryPhotos() {
+    var lists = PROJECTS.map(function (p) {
+      return imagesOf(p).map(function (img) { return { project: p, img: img }; });
+    });
+    var mixed = [];
+    for (var round = 0; lists.some(function (l) { return l.length > round; }); round++) {
+      lists.forEach(function (l) { if (l[round]) mixed.push(l[round]); });
+    }
+    return mixed;
+  }
+
+  // srcset so the browser picks the small or large copy depending on screen size
+  function srcset(p, img) {
+    // small copies are 800px on the shorter side (see tools/optimize-images.py)
+    var shorter = Math.min(img.w, img.h);
+    var smallW = shorter > 800 ? Math.round((img.w * 800) / shorter) : img.w;
+    return src(p, img.name, "small") + " " + smallW + "w, " + src(p, img.name, "large") + " " + img.w + "w";
+  }
+
+  function buildGallery(gallery) {
+    var box = buildLightbox();
+    galleryPhotos().forEach(function (item, i) {
+      var p = item.project, img = item.img;
+      var link = el("a", { class: "gallery-item", href: "project.html?p=" + encodeURIComponent(p.id) });
+      var node = el("img", {
+        src: src(p, img.name, "small"),
+        srcset: srcset(p, img),
+        sizes: "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw",
+        width: img.w,
+        height: img.h,
+        alt: "",
+        loading: i < 6 ? "eager" : "lazy",
+        decoding: "async",
+      });
+      link.appendChild(node);
+      link.addEventListener("click", function (e) {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return; // let "open in new tab" work
+        e.preventDefault();
+        box.open(p, img, node.currentSrc || node.src);
+      });
+      gallery.appendChild(link);
+    });
+  }
+
+  // Focused full view of one photo + "view more from this campaign".
+  function buildLightbox() {
+    var root = el("div", { class: "lightbox", role: "dialog", "aria-modal": "true", "aria-label": "photo" });
+    var close = el("button", { class: "lightbox-close", type: "button" }, "close");
+    var figure = el("div", { class: "lightbox-photo" });
+    var photo = el("img", { alt: "" });
+    figure.appendChild(photo);
+    var more = el("a", { class: "lightbox-more" });
+    more.appendChild(el("span", { class: "lightbox-name" }));
+    more.appendChild(el("span", null, "view more from this campaign →"));
+    root.appendChild(close);
+    root.appendChild(figure);
+    root.appendChild(more);
+    document.body.appendChild(root);
+
+    var lastFocus = null;
+    var isOpen = false;
+
+    function open(p, img, previewSrc) {
+      lastFocus = document.activeElement;
+      // show the already-loaded small copy instantly, then swap in the large one
+      photo.src = previewSrc;
+      photo.width = img.w;
+      photo.height = img.h;
+      var large = new Image();
+      large.onload = function () { if (isOpen) photo.src = large.src; };
+      large.src = src(p, img.name, "large");
+      more.href = "project.html?p=" + encodeURIComponent(p.id);
+      more.firstChild.textContent = displayName(p);
+      root.classList.add("is-open");
+      document.documentElement.classList.add("no-scroll");
+      isOpen = true;
+      history.pushState({ lightbox: true }, ""); // phone "back" closes the photo
+      close.focus();
+    }
+
+    function hide(fromHistory) {
+      if (!isOpen) return;
+      isOpen = false;
+      root.classList.remove("is-open");
+      document.documentElement.classList.remove("no-scroll");
+      if (!fromHistory && history.state && history.state.lightbox) history.back();
+      if (lastFocus) lastFocus.focus();
+    }
+
+    close.addEventListener("click", function () { hide(false); });
+    root.addEventListener("click", function (e) {
+      if (e.target === root || e.target === figure) hide(false); // click outside the photo
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") hide(false);
+    });
+    window.addEventListener("popstate", function () { hide(true); });
+
+    return { open: open };
+  }
+
+  // ---------- projects page: grid ----------
 
   function buildGrid(grid) {
     var canHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
@@ -150,7 +255,7 @@
 
     if (!p) {
       root.appendChild(el("p", null, "project not found."));
-      root.appendChild(el("a", { class: "back", href: "index.html#projects" }, "← all projects"));
+      root.appendChild(el("a", { class: "back", href: "projects.html" }, "← all projects"));
       return;
     }
 
@@ -186,10 +291,13 @@
     });
     root.appendChild(photos);
 
-    root.appendChild(el("a", { class: "back", href: "index.html#projects" }, "← all projects"));
+    root.appendChild(el("a", { class: "back", href: "projects.html" }, "← all projects"));
   }
 
   // ---------- start ----------
+
+  var gallery = document.getElementById("gallery");
+  if (gallery) buildGallery(gallery);
 
   var grid = document.getElementById("projects");
   if (grid) buildGrid(grid);

@@ -11,8 +11,9 @@ Double-click `index.html`. It opens in your browser and works straight from the 
 | File / folder | What it is | Edit it? |
 |---|---|---|
 | `projects.js` | Every project's text, cover and order | **Yes**: this is where you change content |
-| `index.html` | Home page (grid, about, contact) | Yes, for the about sentence / contact info |
-| `contact.html` | Contact page with "about me" | Yes, for that text |
+| `index.html` | Home page: gallery of every photo, click one for the focused view | Rarely |
+| `projects.html` | Projects page: grid of covers with the hover slideshow | Rarely |
+| `contact.html` | Contact info and "about me" | Yes, for that text |
 | `project.html` | One template used by every project page | Rarely |
 | `style.css` | All the design | When changing the look |
 | `site.js` | Builds the grid, hover slideshow and project pages | Rarely |
@@ -20,7 +21,7 @@ Double-click `index.html`. It opens in your browser and works straight from the 
 | `images/manifest.js` | Auto-generated list of photos | No |
 | `assets/` | Your originals. Never touched by the site, not uploaded | No |
 | `tools/optimize-images.py` | Makes the copies in `images/` | No |
-| `tools/crop.html` | Drag photos to choose their 4:5 home-tile crop, then copy the line into `projects.js` | No (just open it) |
+| `tools/crop.html` | Drag photos to choose their 4:5 projects-page tile crop, then copy the line into `projects.js` | No (just open it) |
 
 ## Adding or changing photos
 

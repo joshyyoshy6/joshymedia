@@ -146,6 +146,106 @@ main {
   opacity: 0.5;
 }
 
+/* ---------- home gallery ---------- */
+
+.gallery {
+  columns: 3;
+  column-gap: 24px;
+  padding-top: 32px;
+}
+
+.gallery-item {
+  display: block;
+  margin-bottom: 24px;
+  break-inside: avoid;
+  cursor: zoom-in;
+}
+
+.gallery-item:hover {
+  opacity: 1;
+}
+
+.gallery-item img {
+  width: 100%;
+  height: auto;
+  background: var(--tile);
+  transition: opacity 300ms ease;
+}
+
+.gallery-item:hover img {
+  opacity: 0.85;
+}
+
+/* ---------- focused photo view ---------- */
+
+html.no-scroll {
+  overflow: hidden;
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  padding: 0 var(--gutter);
+  background: var(--bg);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 300ms ease, visibility 0s linear 300ms;
+}
+
+.lightbox.is-open {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 300ms ease;
+}
+
+.lightbox-close {
+  align-self: flex-end;
+  height: var(--header-h);
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
+.lightbox-close:hover {
+  opacity: 0.5;
+}
+
+.lightbox-photo {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-out;
+}
+
+.lightbox-photo img {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  cursor: default;
+}
+
+.lightbox-more {
+  align-self: center;
+  display: flex;
+  gap: 16px;
+  padding: 20px 0 28px;
+}
+
+.lightbox-name {
+  color: var(--muted);
+}
+
 /* ---------- about + contact ---------- */
 
 .section {
@@ -219,6 +319,10 @@ main {
   .grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .gallery {
+    columns: 2;
+  }
 }
 
 @media (max-width: 640px) {
@@ -237,6 +341,21 @@ main {
     padding-top: 80px;
   }
 
+  .gallery {
+    columns: 1;
+    padding-top: 16px;
+  }
+
+  .gallery-item {
+    margin-bottom: 16px;
+  }
+
+  .lightbox-more {
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+
   .photos {
     gap: 12px;
     margin-top: 48px;
@@ -252,5 +371,11 @@ main {
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+
+  .lightbox,
+  .lightbox.is-open,
+  .gallery-item img {
+    transition: none;
   }
 }
