@@ -47,7 +47,7 @@ window.PROJECTS = [
     folder: "vuze-magazine",
     cover: "cover",
     crop: { "cover": "50% 19%", "1": "48% 50%", "2": "48% 50%", "3": "40% 50%" },
-    order: 1,
+    order: 2,
   },
   {
     id: "ditch-2026-fw-campaign",
@@ -59,7 +59,7 @@ window.PROJECTS = [
     folder: "ditch/2026-fw-campaign",
     cover: "cover",
     crop: { "cover": "55% 50%", "1": "30% 50%", "2": "84% 50%" },
-    order: 2,
+    order: 1,
   },
   {
     id: "ditch-ruin",
