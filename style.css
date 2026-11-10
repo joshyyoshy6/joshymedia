@@ -1,3 +1,15 @@
+/* ---------- base ---------- */
+
+:root {
+  --text: #111;
+  --muted: #999;
+  --bg: #fff;
+  --tile: #f2f2f2;
+  --gutter: 32px;
+  --header-h: 64px;
+  --fade: 600ms;
+}
+
 *,
 *::before,
 *::after {
@@ -8,17 +20,28 @@
 
 html {
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  background: #fff;
-  color: #111;
+  background: var(--bg);
+  color: var(--text);
   font-family: Helvetica, Arial, sans-serif;
   font-size: 14px;
   font-weight: 400;
   line-height: 1.5;
   text-transform: lowercase;
   -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1,
+h2,
+h3 {
+  font-size: inherit;
+  font-weight: inherit;
 }
 
 a {
@@ -36,24 +59,35 @@ img {
 }
 
 .wrap {
+  width: 100%;
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0 32px;
+  padding: 0 var(--gutter);
 }
 
-/* header */
+main {
+  flex: 1;
+}
+
+.label {
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+/* ---------- header + footer ---------- */
+
 .site-header {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: #fff;
+  background: var(--bg);
 }
 
 .site-header .wrap {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 64px;
+  height: var(--header-h);
 }
 
 .site-header nav {
@@ -61,36 +95,67 @@ img {
   gap: 24px;
 }
 
-/* project grid */
+.site-footer {
+  padding: 120px 0 32px;
+  color: var(--muted);
+}
+
+/* ---------- home grid ---------- */
+
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 48px 24px;
   padding-top: 32px;
-  scroll-margin-top: 64px;
+  scroll-margin-top: var(--header-h);
 }
 
-.project-card img {
-  width: 100%;
+.card:hover {
+  opacity: 1; /* the photo fades instead of the whole card */
+}
+
+.card-media {
+  position: relative;
   aspect-ratio: 4 / 5;
-  object-fit: cover;
-  background: #f2f2f2;
+  overflow: hidden;
+  background: var(--tile);
 }
 
-.project-card p {
+.card-media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.card-media .preview {
+  opacity: 0;
+  transition: opacity var(--fade) ease;
+}
+
+.card-media .preview.is-on {
+  opacity: 1;
+}
+
+.card p {
   margin-top: 8px;
 }
 
-/* about + contact */
+.card:hover p {
+  opacity: 0.5;
+}
+
+/* ---------- about + contact ---------- */
+
 .section {
   max-width: 480px;
   padding-top: 120px;
-  scroll-margin-top: 64px;
+  scroll-margin-top: var(--header-h);
 }
 
-.label {
-  color: #999;
-  margin-bottom: 12px;
+.section p + p {
+  margin-top: 1em;
 }
 
 .contact-list {
@@ -102,58 +167,64 @@ img {
   text-underline-offset: 2px;
 }
 
-/* project page */
-.project-page {
-  max-width: 1000px;
+.contact-page .section:first-child {
   padding-top: 32px;
 }
 
-.project-head h1 {
-  font-size: inherit;
-  font-weight: inherit;
+/* ---------- project page ---------- */
+
+.project {
+  padding-top: 32px;
 }
 
 .project-head {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 32px;
+  max-width: 560px;
+}
+
+.project-meta {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 0 16px;
+  margin-top: 24px;
+}
+
+.project-meta dt {
+  color: var(--muted);
+}
+
+.project-desc {
+  margin-top: 24px;
 }
 
 .photos {
   display: flex;
   flex-direction: column;
   gap: 24px;
+  margin-top: 64px;
 }
 
 .photos img {
-  width: 100%;
   height: auto;
+  background: var(--tile);
 }
 
-/* footer */
-.site-footer {
-  padding: 120px 0 32px;
+.back {
+  display: inline-block;
+  margin-top: 64px;
 }
 
-/* tablet */
-@media (max-width: 900px) {
+/* ---------- tablet + phone ---------- */
+
+@media (max-width: 1024px) {
   .grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-/* phone */
-@media (max-width: 560px) {
-  .wrap {
-    padding: 0 16px;
-  }
-
-  .site-header .wrap {
-    height: 56px;
-  }
-
-  .site-header nav {
-    gap: 16px;
+@media (max-width: 640px) {
+  :root {
+    --gutter: 16px;
+    --header-h: 56px;
   }
 
   .grid {
@@ -166,15 +237,20 @@ img {
     padding-top: 80px;
   }
 
-  .project-page {
-    padding-top: 16px;
-  }
-
   .photos {
     gap: 12px;
+    margin-top: 48px;
   }
 
   .site-footer {
     padding-top: 80px;
+  }
+}
+
+/* ---------- reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
   }
 }

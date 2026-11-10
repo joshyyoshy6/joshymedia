@@ -1,0 +1,36 @@
+# joshymedia portfolio
+
+Plain HTML, CSS and a little JavaScript. No frameworks, no build step.
+
+## Preview
+
+Double-click `index.html`. It opens in your browser and works straight from the folder.
+
+## Files
+
+| File / folder | What it is | Edit it? |
+|---|---|---|
+| `projects.js` | Every project's text, cover and order | **Yes**: this is where you change content |
+| `index.html` | Home page (grid, about, contact) | Yes, for the about sentence / contact info |
+| `contact.html` | Contact page with "about me" | Yes, for that text |
+| `project.html` | One template used by every project page | Rarely |
+| `style.css` | All the design | When changing the look |
+| `site.js` | Builds the grid, hover slideshow and project pages | Rarely |
+| `images/` | Web-optimized copies of your photos (made by the script) | No |
+| `images/manifest.js` | Auto-generated list of photos | No |
+| `assets/` | Your originals. Never touched by the site, not uploaded | No |
+| `tools/optimize-images.py` | Makes the copies in `images/` | No |
+
+## Adding or changing photos
+
+1. Put the originals in `assets/images/` (client folder, or client/project subfolder).
+2. Run `python tools/optimize-images.py`.
+3. For a **new project**, add a block for it in `projects.js` and set `folder` to the folder name the script printed
+   (e.g. `ditch/new-campaign`).
+
+## Undoing changes (git)
+
+- See what changed: `git status`
+- Throw away unsaved edits to one file: `git restore projects.js`
+- Save a checkpoint: `git add . && git commit -m "what changed"`
+- Put the site live on GitHub Pages: `git push`
