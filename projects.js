@@ -25,6 +25,16 @@
 //                   crop: { "cover": "30% 50%", "2": "100% 50%" },
 //                 0% = left/top edge, 50% = center, 100% = right/bottom edge.
 //                 Photos not listed stay centered. {} = all centered.
+//    layout       (optional) How photos are arranged on the project page.
+//                 A list of rows, left to right:
+//                   ["cover"]               one photo, full width
+//                   ["4", "5"]              side by side, same height
+//                   ["cover", ["1","2","3"]] a photo next to a stack of
+//                                           photos; the stack's top and
+//                                           bottom line up with the photo
+//                 Photos not in the layout are added at the end, one per
+//                 row. Leave it out to show every photo full width.
+//                 On phones every photo is shown full width, one per row.
 //    order        Position on the projects page (and how the home gallery
 //                 mixes photos): 1 = first. Lower comes first.
 //
@@ -41,21 +51,25 @@ window.PROJECTS = [
     id: "vuze-magazine",
     client: "VUZE Magazine",
     title: "",
-    role: "[your role]",
-    year: "[year]",
-    description: "[short description of the project goes here.]",
+    role: "photographer",
+    year: "2026",
+    description: "Magazine cover for @thevuze starring @ezcodylee",
     folder: "vuze-magazine",
     cover: "cover",
     crop: { "cover": "50% 19%", "1": "48% 50%", "2": "48% 50%", "3": "40% 50%" },
+    // portrait cover on the left, the 3 landscapes stacked beside it
+    layout: [
+      ["cover", ["1", "2", "3"]],
+    ],
     order: 2,
   },
   {
     id: "ditch-2026-fw-campaign",
     client: "ditch",
     title: "2026 FW Campaign",
-    role: "[your role]",
-    year: "[year]",
-    description: "[short description of the project goes here.]",
+    role: "photographer",
+    year: "2026",
+    description: "2026 FW Campaign for @ditch shot in Yellowstone and Grand Teton",
     folder: "ditch/2026-fw-campaign",
     cover: "cover",
     crop: { "cover": "55% 50%", "1": "30% 50%", "2": "84% 50%" },
@@ -65,12 +79,19 @@ window.PROJECTS = [
     id: "ditch-ruin",
     client: "ditch",
     title: "ruin",
-    role: "[your role]",
-    year: "[year]",
+    role: "photographer",
+    year: "2026",
     description: "[short description of the project goes here.]",
     folder: "ditch/ruin",
     cover: "cover",
     crop: { "1": "36% 50%", "2": "44% 50%", "3": "50% 100%", "4": "52% 50%", "5": "92% 50%" },
+    // wide opener, the portrait (3) beside two stacked landscapes, a pair, then a wide closer
+    layout: [
+      ["cover"],
+      ["3", ["1", "2"]],
+      ["4", "5"],
+      ["6"],
+    ],
     order: 3,
   },
   {

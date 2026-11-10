@@ -289,6 +289,111 @@
 
   // ---------- project page ----------
 
+  // Text with @handles turned into instagram links.
+  function withHandles(node, text) {
+    String(text).split(/(@[A-Za-z0-9_](?:[A-Za-z0-9_.]*[A-Za-z0-9_])?)/).forEach(function (part, i) {
+      if (i % 2) {
+        node.appendChild(el("a", {
+          href: "https://instagram.com/" + part.slice(1),
+          target: "_blank",
+          rel: "noopener",
+        }, part));
+      } else if (part) {
+        node.appendChild(document.createTextNode(part));
+      }
+    });
+    return node;
+  }
+
+  // Photos arranged in rows from projects.js "layout" (see the notes there).
+  function buildPhotos(p) {
+    var byName = {};
+    imagesOf(p).forEach(function (img) { byName[img.name] = img; });
+    var used = {};
+    var rows = [];
+
+    (p.layout || []).forEach(function (row) {
+      var cells = row.map(function (cell) {
+        var names = (Array.isArray(cell) ? cell : [cell]).filter(function (n) {
+          if (!byName[n]) console.warn('projects.js layout: no photo "' + n + '" in ' + p.id);
+          return byName[n] && !used[n];
+        });
+        names.forEach(function (n) { used[n] = true; });
+        if (!names.length) return null;
+        return Array.isArray(cell) ? names : names[0];
+      }).filter(function (c) { return c !== null; });
+      if (cells.length) rows.push(cells);
+    });
+    // anything not in the layout goes at the end, one per row
+    imagesOf(p).forEach(function (img) { if (!used[img.name]) rows.push([img.name]); });
+
+    var count = 0;
+    function photo(name) {
+      var img = byName[name];
+      var node = el("img", {
+        src: src(p, name, "large"),
+        alt: count === 0 ? displayName(p) : "",
+        width: img.w,
+        height: img.h,
+        loading: count < 2 ? "eager" : "lazy",
+        decoding: "async",
+      });
+      node.style.aspectRatio = img.w + " / " + img.h; // reserves space while loading
+      count++;
+      return node;
+    }
+    function ratio(name) { return byName[name].w / byName[name].h; }
+
+    var photos = el("div", { class: "photos" });
+    rows.forEach(function (cells) {
+      // a single photo on its own row
+      if (cells.length === 1 && !Array.isArray(cells[0])) {
+        var single = photo(cells[0]);
+        single.className = "photo-single";
+        var r = ratio(cells[0]);
+        // tall photos are kept no taller than the screen
+        if (r < 1) single.style.width = "min(100%, calc(90vh * " + r.toFixed(4) + "))";
+        photos.appendChild(single);
+        return;
+      }
+      // Photos side by side. Widths follow each photo's shape so heights match exactly,
+      // and stacks get exactly the height of their neighbours with no cropping:
+      // every cell grows by its shape ratio, plus a fixed head start for the gaps
+      // inside the tallest stack in the row (flex-basis, in multiples of the gap).
+      var row = el("div", { class: "photo-row" });
+      var maxGaps = 0;
+      cells.forEach(function (cell) { if (Array.isArray(cell)) maxGaps = Math.max(maxGaps, cell.length - 1); });
+      cells.forEach(function (cell) {
+        var grow, gaps;
+        if (Array.isArray(cell)) {
+          var stack = el("div", { class: "photo-stack" });
+          var inner = el("div", { class: "photo-stack-inner" });
+          var tall = 0;
+          cell.forEach(function (n) {
+            var node = photo(n);
+            node.style.flexGrow = (1 / ratio(n)).toFixed(4); // heights in proportion to shape
+            inner.appendChild(node);
+            tall += 1 / ratio(n);
+          });
+          grow = 1 / tall;
+          gaps = grow * (maxGaps - (cell.length - 1));
+          stack.appendChild(inner);
+          row.appendChild(stack);
+          var target = stack;
+        } else {
+          target = photo(cell);
+          grow = ratio(cell);
+          gaps = grow * maxGaps;
+          row.appendChild(target);
+        }
+        target.style.flexGrow = grow.toFixed(4);
+        target.style.flexBasis = "calc(var(--photo-gap) * " + gaps.toFixed(4) + ")";
+      });
+      photos.appendChild(row);
+    });
+    return photos;
+  }
+
   function buildProject(root) {
     var id = new URLSearchParams(window.location.search).get("p");
     var p = PROJECTS.filter(function (x) { return x.id === id; })[0];
@@ -311,25 +416,10 @@
     meta.appendChild(el("dt", null, "year"));
     meta.appendChild(el("dd", null, p.year));
     head.appendChild(meta);
-    if (p.description) head.appendChild(el("p", { class: "project-desc" }, p.description));
+    if (p.description) head.appendChild(withHandles(el("p", { class: "project-desc" }), p.description));
     root.appendChild(head);
 
-    var photos = el("div", { class: "photos" });
-    imagesOf(p).forEach(function (img, i) {
-      var node = el("img", {
-        src: src(p, img.name, "large"),
-        alt: i === 0 ? displayName(p) : "",
-        width: img.w,
-        height: img.h,
-        loading: i < 2 ? "eager" : "lazy",
-        decoding: "async",
-      });
-      // full width, but tall photos never taller than the screen; reserves space while loading
-      node.style.aspectRatio = img.w + " / " + img.h;
-      node.style.width = "min(100%, calc(90vh * " + (img.w / img.h).toFixed(4) + "))";
-      photos.appendChild(node);
-    });
-    root.appendChild(photos);
+    root.appendChild(buildPhotos(p));
 
     root.appendChild(el("a", { class: "back", href: "projects.html" }, "← all projects"));
   }

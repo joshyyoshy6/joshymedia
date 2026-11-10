@@ -301,16 +301,63 @@ html.no-scroll {
   margin-top: 24px;
 }
 
+.project-desc a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .photos {
+  --photo-gap: 24px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--photo-gap);
+  max-width: 1200px;
   margin-top: 64px;
 }
 
 .photos img {
+  display: block;
   height: auto;
   background: var(--tile);
+}
+
+.photo-single {
+  width: 100%;
+}
+
+/* photos side by side; each one's width is set (flex-grow) by its shape so heights match */
+.photo-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--photo-gap);
+}
+
+.photo-row > img {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* a stack fills exactly the height of the photo next to it */
+.photo-stack {
+  flex: 1 1 0;
+  min-width: 0;
+  align-self: stretch;
+  position: relative;
+}
+
+.photo-stack-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--photo-gap);
+}
+
+.photo-stack-inner img {
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+  object-fit: cover;
 }
 
 .back {
@@ -353,8 +400,35 @@ html.no-scroll {
   }
 
   .photos {
-    gap: 12px;
+    --photo-gap: 12px;
     margin-top: 48px;
+  }
+
+  /* phones: every photo full width, one after another */
+  .photo-row,
+  .photo-stack-inner {
+    flex-direction: column;
+  }
+
+  .photo-row > img,
+  .photo-stack,
+  .photo-stack-inner img {
+    flex: none;
+    width: 100%;
+  }
+
+  .photo-stack,
+  .photo-stack-inner {
+    position: static;
+  }
+
+  .photo-stack-inner {
+    display: flex;
+  }
+
+  .photo-stack-inner img {
+    height: auto;
+    object-fit: fill;
   }
 
   .site-footer {
