@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>crop tool — joshymedia</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    /* Helper page for you only: it isn't linked from the site. */
+    .tool { padding-top: 32px; padding-bottom: 64px; }
+    .tool .intro { max-width: 560px; }
+    .tool .intro p + p { margin-top: 1em; }
+    .tool .muted { color: var(--muted); }
+    .proj { margin-top: 64px; }
+    .tiles { display: flex; flex-wrap: wrap; gap: 24px 16px; margin-top: 12px; }
+    .tile { width: 200px; }
+    .frame {
+      position: relative;
+      aspect-ratio: 4 / 5;
+      overflow: hidden;
+      background: var(--tile);
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
+    }
+    .frame.dragging { cursor: grabbing; }
+    .frame img {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; pointer-events: none;
+    }
+    .tile p { margin-top: 6px; display: flex; justify-content: space-between; }
+    .tile .changed { color: var(--text); }
+    .out { display: flex; gap: 12px; margin-top: 16px; max-width: 880px; }
+    .out input {
+      flex: 1; font: inherit; text-transform: none; padding: 6px 8px;
+      border: 1px solid #ddd; background: #fafafa; color: var(--text);
+    }
+    .out button {
+      font: inherit; text-transform: lowercase; padding: 6px 12px;
+      border: 1px solid #ddd; background: var(--bg); color: var(--text); cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap tool">
+    <div class="intro">
+      <p>crop tool</p>
+      <p class="muted">drag a photo inside its frame to choose what shows in the tall home-page tile (cover + hover slideshow). double-click a photo to re-center it.</p>
+      <p class="muted">when you're happy, click "copy" for that project and paste the line into projects.js, replacing that project's existing crop: line. save, then refresh the home page. nothing here is saved on its own.</p>
+    </div>
+    <div id="projects"></div>
+  </main>
+
+  <script src="../images/manifest.js"></script>
+  <script src="../projects.js"></script>
+  <script>
+    (function () {
+      "use strict";
+      var MANIFEST = window.IMAGE_MANIFEST || {};
+      var PROJECTS = (window.PROJECTS || []).slice().sort(function (a, b) { return a.order - b.order; });
+      var KEYWORDS = { left: 0, top: 0, center: 50, right: 100, bottom: 100 };
+
+      function parse(value) {
+        var parts = String(value || "50% 50%").trim().split(/\s+/).map(function (v) {
+          return v in KEYWORDS ? KEYWORDS[v] : parseFloat(v);
+        });
+        return { x: isNaN(parts[0]) ? 50 : parts[0], y: isNaN(parts[1]) ? 50 : parts[1] };
+      }
+
+      function css(pos) { return Math.round(pos.x) + "% " + Math.round(pos.y) + "%"; }
+      function clamp(v) { return Math.max(0, Math.min(100, v)); }
+
+      function el(tag, cls, text) {
+        var n = document.createElement(tag);
+        if (cls) n.className = cls;
+        if (text != null) n.textContent = text;
+        return n;
+      }
+
+      var root = document.getElementById("projects");
+
+      PROJECTS.forEach(function (p) {
+        var photos = MANIFEST[p.folder] || [];
+        var crop = {};
+        photos.forEach(function (ph) { crop[ph.name] = parse((p.crop || {})[ph.name]); });
+
+        var section = el("section", "proj");
+        section.appendChild(el("p", null, p.client + (p.title ? " — " + p.title : "")));
+        var tiles = el("div", "tiles");
+        var out = el("div", "out");
+        var input = el("input");
+        input.readOnly = true;
+        var button = el("button", null, "copy");
+        out.appendChild(input);
+        out.appendChild(button);
+
+        function updateLine() {
+          var parts = photos
+            .filter(function (ph) { return css(crop[ph.name]) !== "50% 50%"; })
+            .map(function (ph) { return JSON.stringify(ph.name) + ": " + JSON.stringify(css(crop[ph.name])); });
+          input.value = "crop: {" + (parts.length ? " " + parts.join(", ") + " " : "") + "},";
+        }
+
+        photos.forEach(function (ph) {
+          var tile = el("div", "tile");
+          var frame = el("div", "frame");
+          var img = el("img");
+          img.src = "../images/" + p.folder + "/" + ph.name + "-small.webp";
+          img.alt = ph.name;
+          var label = el("p");
+          var nameSpan = el("span", null, ph.name + (ph.name === p.cover ? " (cover)" : ""));
+          var valueSpan = el("span", "muted");
+          label.appendChild(nameSpan);
+          label.appendChild(valueSpan);
+
+          function apply() {
+            img.style.objectPosition = css(crop[ph.name]);
+            valueSpan.textContent = css(crop[ph.name]);
+            valueSpan.className = css(crop[ph.name]) === "50% 50%" ? "muted" : "changed";
+            updateLine();
+          }
+
+          var start = null;
+          frame.addEventListener("pointerdown", function (e) {
+            if (!img.naturalWidth) return;
+            frame.setPointerCapture(e.pointerId);
+            frame.classList.add("dragging");
+            var T = frame.clientWidth, H = frame.clientHeight;
+            var scale = Math.max(T / img.naturalWidth, H / img.naturalHeight);
+            start = {
+              x: e.clientX, y: e.clientY, pos: { x: crop[ph.name].x, y: crop[ph.name].y },
+              overX: img.naturalWidth * scale - T, overY: img.naturalHeight * scale - H,
+            };
+          });
+          frame.addEventListener("pointermove", function (e) {
+            if (!start) return;
+            var pos = { x: start.pos.x, y: start.pos.y };
+            if (start.overX > 1) pos.x = clamp(start.pos.x - ((e.clientX - start.x) / start.overX) * 100);
+            if (start.overY > 1) pos.y = clamp(start.pos.y - ((e.clientY - start.y) / start.overY) * 100);
+            crop[ph.name] = pos;
+            apply();
+          });
+          function end() { start = null; frame.classList.remove("dragging"); }
+          frame.addEventListener("pointerup", end);
+          frame.addEventListener("pointercancel", end);
+          frame.addEventListener("dblclick", function () { crop[ph.name] = { x: 50, y: 50 }; apply(); });
+
+          frame.appendChild(img);
+          tile.appendChild(frame);
+          tile.appendChild(label);
+          tiles.appendChild(tile);
+          apply();
+        });
+
+        button.addEventListener("click", function () {
+          input.select();
+          var done = function () { button.textContent = "copied"; setTimeout(function () { button.textContent = "copy"; }, 1500); };
+          if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(input.value).then(done, function () { document.execCommand("copy"); done(); });
+          else { document.execCommand("copy"); done(); }
+        });
+
+        updateLine();
+        section.appendChild(tiles);
+        section.appendChild(out);
+        root.appendChild(section);
+      });
+    })();
+  </script>
+</body>
+</html>

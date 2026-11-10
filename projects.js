@@ -17,6 +17,14 @@
 //                 unless you rename or add a folder (see README.md).
 //    cover        Which photo is the cover: its file name without
 //                 "-large.webp" / "-small.webp". e.g. "cover", "1", "3".
+//    crop         Which part of each photo shows in the tall 4:5 home tiles
+//                 (the cover and the hover slideshow). Project pages always
+//                 show the whole photo. Easiest way: open crop.html, drag
+//                 the photos, and paste the line it gives you here.
+//                 By hand: { "photo name": "LEFT% TOP%" }, e.g.
+//                   crop: { "cover": "30% 50%", "2": "100% 50%" },
+//                 0% = left/top edge, 50% = center, 100% = right/bottom edge.
+//                 Photos not listed stay centered. {} = all centered.
 //    order        Position on the home page: 1 = first. Lower comes first.
 //
 //  Rules for editing:
@@ -37,6 +45,7 @@ window.PROJECTS = [
     description: "[short description of the project goes here.]",
     folder: "vuze-magazine",
     cover: "cover",
+    crop: {},
     order: 1,
   },
   {
@@ -48,6 +57,7 @@ window.PROJECTS = [
     description: "[short description of the project goes here.]",
     folder: "ditch/2026-fw-campaign",
     cover: "cover",
+    crop: {},
     order: 2,
   },
   {
@@ -59,6 +69,7 @@ window.PROJECTS = [
     description: "[short description of the project goes here.]",
     folder: "ditch/ruin",
     cover: "cover",
+    crop: {},
     order: 3,
   },
   {
@@ -70,6 +81,7 @@ window.PROJECTS = [
     description: "[short description of the project goes here.]",
     folder: "sukiibaby",
     cover: "cover",
+    crop: {},
     order: 4,
   },
 ];

@@ -8,7 +8,7 @@
     return (a.order || 0) - (b.order || 0);
   });
   var MANIFEST = window.IMAGE_MANIFEST || {};
-  var SLIDE_MS = 1000; // time per photo in the hover slideshow
+  var SLIDE_MS = 3000; // time per photo in the hover slideshow (3000 = 3 seconds)
 
   // ---------- helpers ----------
 
@@ -27,6 +27,11 @@
 
   function src(project, name, size) {
     return "images/" + project.folder + "/" + name + "-" + size + ".webp";
+  }
+
+  // Which part of a photo shows in the 4:5 home tiles (projects.js "crop"). Default: center.
+  function cropOf(project, name) {
+    return (project.crop && project.crop[name]) || "50% 50%";
   }
 
   // Clients with 2+ projects show "client — title"; others just the client.
@@ -51,14 +56,14 @@
 
       var card = el("a", { class: "card", href: "project.html?p=" + encodeURIComponent(p.id) });
       var media = el("div", { class: "card-media" });
-      media.appendChild(
-        el("img", {
-          src: src(p, p.cover, "small"),
-          alt: displayName(p),
-          loading: i < 3 ? "eager" : "lazy",
-          decoding: "async",
-        })
-      );
+      var cover = el("img", {
+        src: src(p, p.cover, "small"),
+        alt: displayName(p),
+        loading: i < 3 ? "eager" : "lazy",
+        decoding: "async",
+      });
+      cover.style.objectPosition = cropOf(p, p.cover);
+      media.appendChild(cover);
       card.appendChild(media);
       card.appendChild(el("p", null, displayName(p)));
       grid.appendChild(card);
@@ -84,6 +89,7 @@
       previews = names.map(function (name) {
         var img = el("img", { src: src(p, name, "small"), alt: "", class: "preview", decoding: "async" });
         img.setAttribute("aria-hidden", "true");
+        img.style.objectPosition = cropOf(p, name);
         media.appendChild(img);
         return img;
       });

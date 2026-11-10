@@ -20,6 +20,7 @@ Double-click `index.html`. It opens in your browser and works straight from the 
 | `images/manifest.js` | Auto-generated list of photos | No |
 | `assets/` | Your originals. Never touched by the site, not uploaded | No |
 | `tools/optimize-images.py` | Makes the copies in `images/` | No |
+| `tools/crop.html` | Drag photos to choose their 4:5 home-tile crop, then copy the line into `projects.js` | No (just open it) |
 
 ## Adding or changing photos
 
