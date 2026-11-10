@@ -1,0 +1,6 @@
+# real photos/videos stay local until they're reorganized
+assets/
+index-old.html
+
+# local tool settings
+.claude/
