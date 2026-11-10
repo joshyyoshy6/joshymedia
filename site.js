@@ -9,7 +9,7 @@
     return (a.order || 0) - (b.order || 0);
   });
   var MANIFEST = window.IMAGE_MANIFEST || {};
-  var SLIDE_MS = 3000; // time per photo in the hover slideshow (3000 = 3 seconds)
+  var SLIDE_MS = 2250; // time per photo in the hover slideshow (2250 = 2.25 seconds)
 
   // ---------- helpers ----------
 
