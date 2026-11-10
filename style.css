@@ -241,10 +241,9 @@ html.no-scroll {
   cursor: default;
 }
 
-.lightbox-more {
+.lightbox-caption {
   align-self: center;
-  display: flex;
-  gap: 16px;
+  text-align: center;
   padding: 20px 0 28px;
 }
 
@@ -351,12 +350,6 @@ html.no-scroll {
 
   .gallery-item {
     margin-bottom: 16px;
-  }
-
-  .lightbox-more {
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
   }
 
   .photos {

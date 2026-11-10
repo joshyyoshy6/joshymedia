@@ -136,12 +136,15 @@
     var figure = el("div", { class: "lightbox-photo" });
     var photo = el("img", { alt: "" });
     figure.appendChild(photo);
-    var more = el("a", { class: "lightbox-more" });
-    more.appendChild(el("span", { class: "lightbox-name" }));
-    more.appendChild(el("span", null, "view more from this campaign →"));
+    // campaign name (plain text) above the link; only the link reacts to hover
+    var caption = el("div", { class: "lightbox-caption" });
+    var name = el("p", { class: "lightbox-name" });
+    var more = el("a", { class: "lightbox-more" }, "view more from this campaign →");
+    caption.appendChild(name);
+    caption.appendChild(more);
     root.appendChild(close);
     root.appendChild(figure);
-    root.appendChild(more);
+    root.appendChild(caption);
     document.body.appendChild(root);
 
     var lastFocus = null;
@@ -157,7 +160,7 @@
       large.onload = function () { if (isOpen) photo.src = large.src; };
       large.src = src(p, img.name, "large");
       more.href = "project.html?p=" + encodeURIComponent(p.id);
-      more.firstChild.textContent = displayName(p);
+      name.textContent = displayName(p);
       root.classList.add("is-open");
       document.documentElement.classList.add("no-scroll");
       isOpen = true;
