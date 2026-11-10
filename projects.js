@@ -86,3 +86,42 @@ window.PROJECTS = [
     order: 4,
   },
 ];
+
+// =====================================================================
+//  HOME PAGE GALLERY: which photos show, and in what order.
+// =====================================================================
+//
+//  One line per photo: "project id/photo name". The first lines are the
+//  photos at the top of the page (they fill across, left to right).
+//  - Reorder: move lines up or down.
+//  - Hide a photo from the home page: delete its line (or put // in front).
+//  - Add a photo: add a line, e.g. "sukiibaby/3",
+//  Delete this whole list (or leave it empty) to show every photo, mixed.
+//
+// =====================================================================
+
+window.GALLERY = [
+  "ditch-2026-fw-campaign/6",
+  "ditch-2026-fw-campaign/cover",
+  "ditch-ruin/cover",
+  "ditch-ruin/3",
+  "ditch-ruin/6",
+  "ditch-2026-fw-campaign/5",
+  "ditch-2026-fw-campaign/1",
+  "ditch-ruin/1",
+  "ditch-ruin/4",
+  "ditch-2026-fw-campaign/3",
+  "ditch-2026-fw-campaign/4",
+  "sukiibaby/2",
+  "ditch-ruin/2",
+  "vuze-magazine/cover",
+  "ditch-2026-fw-campaign/2",
+  "vuze-magazine/1",
+  "sukiibaby/4",
+  "sukiibaby/3",
+  "ditch-ruin/5",
+  "vuze-magazine/3",
+  "vuze-magazine/2",
+  "sukiibaby/cover",
+  "sukiibaby/1",
+];

@@ -149,9 +149,15 @@ main {
 /* ---------- home gallery ---------- */
 
 .gallery {
-  columns: 3;
-  column-gap: 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
   padding-top: 32px;
+}
+
+.gallery-col {
+  flex: 1;
+  min-width: 0;
 }
 
 .gallery-item {
@@ -320,9 +326,6 @@ html.no-scroll {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .gallery {
-    columns: 2;
-  }
 }
 
 @media (max-width: 640px) {
@@ -342,7 +345,7 @@ html.no-scroll {
   }
 
   .gallery {
-    columns: 1;
+    gap: 16px;
     padding-top: 16px;
   }
 

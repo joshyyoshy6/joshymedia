@@ -47,8 +47,21 @@
 
   // ---------- home page: gallery ----------
 
-  // Every photo from every project, mixed: 1st photo of each project, then 2nd of each, ...
+  // The photos on the home page, in order. Uses the GALLERY list in projects.js
+  // ("project-id/photo-name"). Without that list: every photo, mixed by project.
   function galleryPhotos() {
+    if (window.GALLERY && window.GALLERY.length) {
+      var byId = {};
+      PROJECTS.forEach(function (p) { byId[p.id] = p; });
+      return window.GALLERY.map(function (ref) {
+        var cut = ref.lastIndexOf("/");
+        var p = byId[ref.slice(0, cut)];
+        var name = ref.slice(cut + 1);
+        var img = p && imagesOf(p).filter(function (x) { return x.name === name; })[0];
+        if (!img) console.warn('projects.js GALLERY: can\'t find "' + ref + '"');
+        return img ? { project: p, img: img } : null;
+      }).filter(Boolean);
+    }
     var lists = PROJECTS.map(function (p) {
       return imagesOf(p).map(function (img) { return { project: p, img: img }; });
     });
@@ -69,6 +82,7 @@
 
   function buildGallery(gallery) {
     var box = buildLightbox();
+    var items = [];
     galleryPhotos().forEach(function (item, i) {
       var p = item.project, img = item.img;
       var link = el("a", { class: "gallery-item", href: "project.html?p=" + encodeURIComponent(p.id) });
@@ -88,8 +102,31 @@
         e.preventDefault();
         box.open(p, img, node.currentSrc || node.src);
       });
-      gallery.appendChild(link);
+      items.push({ link: link, ratio: img.h / img.w });
     });
+
+    // Masonry that fills across, row by row: each photo goes into the currently
+    // shortest column, so the first photos in the list are the ones at the top.
+    var columnCount = 0;
+    function layout() {
+      var count = window.matchMedia("(max-width: 640px)").matches ? 1
+        : window.matchMedia("(max-width: 1024px)").matches ? 2 : 3;
+      if (count === columnCount) return;
+      columnCount = count;
+      gallery.textContent = "";
+      var cols = [], heights = [];
+      for (var c = 0; c < count; c++) {
+        cols.push(gallery.appendChild(el("div", { class: "gallery-col" })));
+        heights.push(0);
+      }
+      items.forEach(function (item) {
+        var shortest = heights.indexOf(Math.min.apply(null, heights));
+        cols[shortest].appendChild(item.link);
+        heights[shortest] += item.ratio + 0.05; // + a bit for the gap
+      });
+    }
+    layout();
+    window.addEventListener("resize", layout);
   }
 
   // Focused full view of one photo + "view more from this campaign".

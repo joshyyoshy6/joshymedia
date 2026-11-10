@@ -10,7 +10,7 @@ Double-click `index.html`. It opens in your browser and works straight from the 
 
 | File / folder | What it is | Edit it? |
 |---|---|---|
-| `projects.js` | Every project's text, cover and order | **Yes**: this is where you change content |
+| `projects.js` | Every project's text, cover and order, plus the home gallery photo list (`GALLERY`, at the bottom) | **Yes**: this is where you change content |
 | `index.html` | Home page: gallery of every photo, click one for the focused view | Rarely |
 | `projects.html` | Projects page: grid of covers with the hover slideshow | Rarely |
 | `contact.html` | Contact info and "about me" | Yes, for that text |
