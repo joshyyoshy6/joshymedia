@@ -46,7 +46,7 @@ window.PROJECTS = [
     description: "[short description of the project goes here.]",
     folder: "vuze-magazine",
     cover: "cover",
-    crop: {},
+    crop: { "cover": "50% 19%", "1": "48% 50%", "2": "48% 50%", "3": "40% 50%" },
     order: 1,
   },
   {
@@ -58,7 +58,7 @@ window.PROJECTS = [
     description: "[short description of the project goes here.]",
     folder: "ditch/2026-fw-campaign",
     cover: "cover",
-    crop: {},
+    crop: { "cover": "55% 50%", "1": "30% 50%", "2": "84% 50%" },
     order: 2,
   },
   {
@@ -70,7 +70,7 @@ window.PROJECTS = [
     description: "[short description of the project goes here.]",
     folder: "ditch/ruin",
     cover: "cover",
-    crop: {},
+    crop: { "1": "36% 50%", "2": "44% 50%", "3": "50% 100%", "4": "52% 50%", "5": "92% 50%" },
     order: 3,
   },
   {
@@ -82,7 +82,7 @@ window.PROJECTS = [
     description: "[short description of the project goes here.]",
     folder: "sukiibaby",
     cover: "cover",
-    crop: {},
+    crop: { "1": "80% 50%", "3": "65% 50%", "4": "74% 50%" },
     order: 4,
   },
 ];
