@@ -4,7 +4,7 @@
 //
 //  Each project is one { ... } block. The fields:
 //
-//    id           Short name used in the link (project.html?p=ID).
+//    id           Short name used in the link (index.html#p=ID).
 //                 Lowercase, no spaces. Must be different for every project.
 //    client       Client name. Shown on the projects page and project page.
 //    title        Project name. Only shown when a client has 2+ projects

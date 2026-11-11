@@ -2,33 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>joshymedia</title>
-  <link rel="stylesheet" href="style.css">
+  <!-- old address (project.html?p=ID): the site is now one page. This sends visitors to that project. -->
+  <script>
+    var id = new URLSearchParams(location.search).get("p");
+    location.replace("index.html" + (id ? "#p=" + encodeURIComponent(id) : "#projects"));
+  </script>
+  <meta http-equiv="refresh" content="1; url=index.html#projects">
 </head>
-<body>
-
-  <header class="site-header">
-    <div class="wrap">
-      <a href="index.html">joshymedia</a>
-      <nav>
-        <a href="projects.html">projects</a>
-        <a href="contact.html">contact</a>
-      </nav>
-    </div>
-  </header>
-
-  <main class="wrap">
-    <!-- one page for every project: site.js fills it in using ?p=<id> from projects.js -->
-    <article id="project" class="project"></article>
-  </main>
-
-  <footer class="site-footer">
-    <div class="wrap">© 2026 joshymedia</div>
-  </footer>
-
-  <script src="images/manifest.js"></script>
-  <script src="projects.js"></script>
-  <script src="site.js"></script>
-</body>
+<body><a href="index.html#projects">joshymedia — projects</a></body>
 </html>
