@@ -203,6 +203,28 @@ img { display: block; }
   transition: opacity 200ms ease;
 }
 .stage img.loading { opacity: 0.6; }
+
+/* zoom (ctrl + scroll / pinch): the photo zooms inside its own frame */
+.photo-box { position: relative; flex: none; overflow: hidden; line-height: 0; }
+.photo-box img { transform-origin: 0 0; }
+.photo-box.zoomed { cursor: grab; }
+.photo-box.zoomed.dragging { cursor: grabbing; }
+.nav-btn, .pager { z-index: 2; }
+.navi {
+  position: absolute; left: 12px; bottom: 32px; z-index: 3;
+  width: 170px; line-height: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, .75);
+  background: #000;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .5);
+  cursor: crosshair;
+}
+.navi-rect {
+  position: absolute;
+  border: 2px solid #e5322d;
+  box-shadow: 0 0 0 999px rgba(0, 0, 0, .35); /* dims the part that's off screen */
+  pointer-events: none;
+}
 .nav-btn {
   /* spans the photo's height (inside the frame's border), arrow in the middle */
   position: absolute; top: 20px; bottom: 20px; width: 56px;
@@ -478,4 +500,13 @@ img { display: block; }
   .sheet-grid { gap: 16px; }
   .sheet-row { gap: 8px; }
   .sheet-grid .thumb .name, .sheet-grid .thumb .proj { font-size: 10px; }
+}
+
+/* navigator thumbnail (after the other .stage img rules so it wins) */
+.stage .navi img, .stage:fullscreen .navi img {
+  width: 100%; height: auto; max-width: none; max-height: none;
+  display: block; opacity: .9; transition: none;
+}
+@media (max-width: 760px) {
+  .navi { width: 110px; left: 8px; bottom: 30px; }
 }

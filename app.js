@@ -358,6 +358,8 @@
     var item = list[state.index];
     if (!item) return;
     var img = $("photo");
+    resetZoom();
+    $("naviImg").src = src(item.p, item.img.name, "small");
     // Only one photo is ever on screen: the next photo is fully loaded and
     // decoded off-screen first, then swapped in all at once. If you press the
     // arrows quickly, only the newest photo gets shown.
@@ -427,29 +429,38 @@
   // Wide screens: the photo area is exactly as wide as the photo and the
   // details panel takes the rest. Narrower screens: the photo is full width.
   var BORDER = 20;
+  // The viewing window is the same size for every photo: a 3:2 frame (the shape
+  // of most of the landscapes), sized to the screen. Landscapes fill its width
+  // edge to edge; portraits sit centered in it with dark space beside them.
+  var FRAME_RATIO = 3 / 2;
   function fitPhoto() {
+    resetZoom();
     var img = $("photo"), stage = $("stage"), row = $("viewerRow");
     var item = list[state.index];
     img.style.width = img.style.height = "";
     stage.style.flex = stage.style.height = stage.style.alignSelf = "";
     if (!item || state.mode !== "view" || document.fullscreenElement) return;
     var ratio = item.img.w / item.img.h;
+    var cs = getComputedStyle(stage);
+    var padY = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+    var fw, fh;
     if (window.innerWidth >= 1200) {
-      var h = Math.min(row.clientHeight - BORDER * 2, (row.clientWidth - 320) / ratio);
-      img.style.width = Math.floor(h * ratio) + "px";
-      img.style.height = Math.floor(h) + "px";
-      stage.style.flex = "0 0 " + Math.floor(h * ratio) + "px";
-      // the black frame hugs the photo: just the border above and below
-      stage.style.height = Math.floor(h) + BORDER * 2 + "px";
+      fh = Math.min(row.clientHeight - padY, (row.clientWidth - 320) / FRAME_RATIO);
+      fw = fh * FRAME_RATIO;
+      stage.style.flex = "0 0 " + Math.floor(fw) + "px";
       stage.style.alignSelf = "center";
     } else {
-      var w = stage.clientWidth;
-      var maxH = window.innerHeight * (window.innerWidth <= 760 ? 0.62 : 0.72);
-      var hh = Math.min(w / ratio, maxH);
-      img.style.width = Math.floor(hh * ratio) + "px";
-      img.style.height = Math.floor(hh) + "px";
+      fw = stage.clientWidth;
+      fh = Math.min(fw / FRAME_RATIO, window.innerHeight * (window.innerWidth <= 760 ? 0.62 : 0.72));
     }
+    stage.style.height = Math.floor(fh + padY) + "px";
+    // fit the photo inside the frame without cropping
+    var w = fw, h = fw / ratio;
+    if (h > fh) { h = fh; w = fh * ratio; }
+    img.style.width = Math.floor(w) + "px";
+    img.style.height = Math.floor(h) + "px";
   }
+
   function updateZoom() { fitPhoto(); }
 
   function step(d) {
@@ -488,7 +499,7 @@
   var enterFrom = 0, sx = null, sy = 0, dx = 0, dragging = false;
   var stage = $("stage"), photo = $("photo");
   stage.addEventListener("touchstart", function (e) {
-    if (e.touches.length !== 1) return;
+    if (e.touches.length !== 1 || zoom.z > 1) { sx = null; return; }
     sx = e.touches[0].clientX; sy = e.touches[0].clientY; dx = 0; dragging = false;
     photo.style.transition = "none";
   }, { passive: true });
@@ -517,6 +528,95 @@
     }
     dragging = false;
   });
+
+  // ---------- zoom: ctrl + scroll (or trackpad pinch) on the photo ----------
+  var zoom = { z: 1, tx: 0, ty: 0 };
+  var MAX_ZOOM = 6;
+  function applyZoom() {
+    var img = $("photo"), box = $("photoBox"), navi = $("navi");
+    var w = box.clientWidth, h = box.clientHeight;
+    if (zoom.z <= 1.001 || !w) {
+      zoom.z = 1; zoom.tx = zoom.ty = 0;
+      if (box.classList.contains("zoomed")) img.style.transform = "";
+      box.classList.remove("zoomed");
+      navi.classList.add("hidden");
+      $("stage").style.touchAction = "";
+      return;
+    }
+    // keep the zoomed photo covering its whole frame
+    zoom.tx = Math.min(0, Math.max(w - w * zoom.z, zoom.tx));
+    zoom.ty = Math.min(0, Math.max(h - h * zoom.z, zoom.ty));
+    img.style.transition = "none";
+    img.style.transform = "translate(" + zoom.tx + "px," + zoom.ty + "px) scale(" + zoom.z + ")";
+    box.classList.add("zoomed");
+    $("stage").style.touchAction = "none";
+    navi.classList.remove("hidden");
+    var r = $("naviRect").style;
+    r.left = (-zoom.tx / (w * zoom.z)) * 100 + "%";
+    r.top = (-zoom.ty / (h * zoom.z)) * 100 + "%";
+    r.width = 100 / zoom.z + "%";
+    r.height = 100 / zoom.z + "%";
+  }
+  function resetZoom() { zoom.z = 1; applyZoom(); }
+  // zoom to level nz, keeping the point (px, py) of the frame where it is
+  function zoomAt(nz, px, py) {
+    nz = Math.min(MAX_ZOOM, Math.max(1, nz));
+    var ix = (px - zoom.tx) / zoom.z, iy = (py - zoom.ty) / zoom.z;
+    zoom.tx = px - ix * nz; zoom.ty = py - iy * nz; zoom.z = nz;
+    applyZoom();
+  }
+  function framePoint(e) {
+    var r = $("photoBox").getBoundingClientRect();
+    return [Math.min(r.width, Math.max(0, e.clientX - r.left)), Math.min(r.height, Math.max(0, e.clientY - r.top))];
+  }
+  $("stage").addEventListener("wheel", function (e) {
+    if (!e.ctrlKey || state.mode !== "view") return; // plain scrolling stays normal
+    e.preventDefault(); // stop the browser zooming the whole page
+    var dy = e.deltaY * (e.deltaMode === 1 ? 33 : e.deltaMode === 2 ? 400 : 1);
+    var p = framePoint(e);
+    zoomAt(zoom.z * Math.exp(-dy * 0.0025), p[0], p[1]);
+  }, { passive: false });
+  // double-click: zoom in there, or back out
+  $("photoBox").addEventListener("dblclick", function (e) {
+    if (zoom.z > 1) resetZoom();
+    else { var p = framePoint(e); zoomAt(2.5, p[0], p[1]); }
+  });
+  // drag to move around while zoomed
+  (function () {
+    var box = $("photoBox"), last = null;
+    box.addEventListener("pointerdown", function (e) {
+      if (zoom.z <= 1 || e.button !== 0) return;
+      last = [e.clientX, e.clientY];
+      box.setPointerCapture(e.pointerId);
+      box.classList.add("dragging");
+      e.preventDefault();
+    });
+    box.addEventListener("pointermove", function (e) {
+      if (!last) return;
+      zoom.tx += e.clientX - last[0]; zoom.ty += e.clientY - last[1];
+      last = [e.clientX, e.clientY];
+      applyZoom();
+    });
+    function end() { last = null; box.classList.remove("dragging"); }
+    box.addEventListener("pointerup", end);
+    box.addEventListener("pointercancel", end);
+  })();
+  // navigator: click or drag to move the red box
+  (function () {
+    var navi = $("navi"), down = false;
+    function moveTo(e) {
+      var r = navi.getBoundingClientRect(), box = $("photoBox");
+      var w = box.clientWidth, h = box.clientHeight;
+      var fx = (e.clientX - r.left) / r.width, fy = (e.clientY - r.top) / r.height;
+      zoom.tx = w / 2 - fx * w * zoom.z;
+      zoom.ty = h / 2 - fy * h * zoom.z;
+      applyZoom();
+    }
+    navi.addEventListener("pointerdown", function (e) { down = true; navi.setPointerCapture(e.pointerId); moveTo(e); e.preventDefault(); });
+    navi.addEventListener("pointermove", function (e) { if (down) moveTo(e); });
+    navi.addEventListener("pointerup", function () { down = false; });
+    navi.addEventListener("pointercancel", function () { down = false; });
+  })();
 
   window.addEventListener("hashchange", render);
   window.addEventListener("popstate", render);

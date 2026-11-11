@@ -53,7 +53,9 @@
       <div class="viewer-row" id="viewerRow">
         <div class="stage" id="stage">
           <button class="nav-btn prev" id="prev" aria-label="previous photo"></button>
-          <img id="photo" alt="">
+          <div class="photo-box" id="photoBox"><img id="photo" alt=""></div>
+          <!-- shown while zoomed: the whole photo, with a red box around the part on screen -->
+          <div class="navi hidden" id="navi" aria-hidden="true"><img id="naviImg" alt=""><span class="navi-rect" id="naviRect"></span></div>
           <button class="nav-btn next" id="next" aria-label="next photo"></button>
           <div class="pager" id="pager" aria-hidden="true"></div>
         </div>
