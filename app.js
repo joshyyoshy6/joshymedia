@@ -390,13 +390,13 @@
       swapIn(src(item.p, item.img.name, "large"), function () { img.classList.remove("loading"); updateZoom(); });
     });
 
-    // dots under the photo (a counter instead when there are lots of photos)
+    // dots under the photo (none when there are too many photos to show as dots)
     var pager = $("pager");
     pager.innerHTML = "";
     if (list.length <= 12) {
       list.forEach(function (_, i) { pager.appendChild(el("i", i === state.index ? "on" : null)); });
     } else {
-      pager.textContent = (state.index + 1) + " / " + list.length;
+      // no photo count
     }
 
     img.dataset.w = item.img.w;
