@@ -221,9 +221,9 @@
     .nav-btn.prev { left: 0; }
     .nav-btn.next { right: 0; }
     /* dots under the photo show where you are, on every screen size */
-    .stage { padding-bottom: 26px; }
+    .stage { padding: 20px 0; } /* slight even border above and below the photo */
     .pager {
-      position: absolute; left: 0; right: 0; bottom: 10px;
+      position: absolute; left: 0; right: 0; bottom: 6px;
       display: flex; justify-content: center; align-items: center; gap: 6px;
       font-size: 11px; color: var(--muted);
     }
@@ -327,8 +327,9 @@
     /* large photo + details panel beside it */
     .viewer-row { flex: 1; min-height: 0; display: flex; }
     .viewer-row .stage { flex: 1; min-width: 0; }
+    .details > * { max-width: 440px; }
     .details {
-      width: 320px; flex: none;
+      flex: 1 1 320px; min-width: 320px; /* takes whatever width the photo leaves */
       overflow: auto;
       padding: 32px 28px;
       background: var(--panel);
@@ -435,7 +436,7 @@
       .viewer-row { flex-direction: column; overflow: auto; }
       .viewer-row .stage { flex: none; }
       .stage img { max-width: 100%; max-height: 72vh; width: auto; height: auto; }
-      .details { width: auto; flex: 1 0 auto; border-left: 0; border-top: 1px solid var(--line); }
+      .details { width: auto; flex: 1 0 auto; min-width: 0; border-left: 0; border-top: 1px solid var(--line); }
     }
 
     @media (max-width: 760px) {
@@ -454,7 +455,7 @@
       body.drawer .side { transform: none; }
 
       /* phones: swipe the photo; faint arrows + dots show there's more */
-      .stage { touch-action: pan-y; overflow: hidden; padding-bottom: 26px; }
+      .stage { touch-action: pan-y; overflow: hidden; padding: 12px 0 22px; }
       .stage img { max-height: 62vh; }
       .infobar { flex-wrap: wrap; gap: 4px 16px; white-space: normal; }
       .infobar .desc { flex-basis: 100%; white-space: normal; }
@@ -880,6 +881,7 @@
       // decoded off-screen first, then swapped in all at once. If you press the
       // arrows quickly, only the newest photo gets shown.
       var token = ++viewToken;
+      fitPhoto();
       var fromSide = enterFrom; // set by a swipe: slide the new photo in from that side
       enterFrom = 0;
       if (!fromSide) { img.style.transition = "none"; img.style.transform = ""; img.style.opacity = ""; }
@@ -939,11 +941,35 @@
       document.title = fileName(item.p, item.img) + " — joshymedia";
     }
 
-    function updateZoom() {
-      var img = $("photo");
-      var w = parseInt(img.dataset.w, 10);
-      // (zoom readout removed)
+    // Size the large photo so it always runs edge to edge left and right, with a
+    // small even border above and below (the dots sit in the bottom border).
+    // Wide screens: the photo area is exactly as wide as the photo and the
+    // details panel takes the rest. Narrower screens: the photo is full width.
+    var BORDER = 20;
+    function fitPhoto() {
+      var img = $("photo"), stage = $("stage"), row = $("viewerRow");
+      var item = list[state.index];
+      img.style.width = img.style.height = "";
+      stage.style.flex = stage.style.height = stage.style.alignSelf = "";
+      if (!item || state.mode !== "view" || document.fullscreenElement) return;
+      var ratio = item.img.w / item.img.h;
+      if (window.innerWidth >= 1200) {
+        var h = Math.min(row.clientHeight - BORDER * 2, (row.clientWidth - 320) / ratio);
+        img.style.width = Math.floor(h * ratio) + "px";
+        img.style.height = Math.floor(h) + "px";
+        stage.style.flex = "0 0 " + Math.floor(h * ratio) + "px";
+        // the black frame hugs the photo: just the border above and below
+        stage.style.height = Math.floor(h) + BORDER * 2 + "px";
+        stage.style.alignSelf = "center";
+      } else {
+        var w = stage.clientWidth;
+        var maxH = window.innerHeight * (window.innerWidth <= 760 ? 0.62 : 0.72);
+        var hh = Math.min(w / ratio, maxH);
+        img.style.width = Math.floor(hh * ratio) + "px";
+        img.style.height = Math.floor(hh) + "px";
+      }
     }
+    function updateZoom() { fitPhoto(); }
 
     function step(d) {
       if (state.mode !== "view" || !list.length) return;
@@ -955,6 +981,7 @@
     $("next").addEventListener("click", function () { step(1); });
     $("photo").addEventListener("load", updateZoom);
     window.addEventListener("resize", updateZoom);
+    document.addEventListener("fullscreenchange", updateZoom);
     var rz;
     window.addEventListener("resize", function () { clearTimeout(rz); rz = setTimeout(layoutSheet, 120); });
     $("modes").addEventListener("click", function (e) {
