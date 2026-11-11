@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<!-- made by tools/build-pages.py from index.html: edit index.html instead -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>joshymedia</title>
+  <script>
+    try { var t = localStorage.getItem("jm-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+  </script>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+  <header class="menubar">
+    <button class="menu-folders" id="drawerBtn" aria-label="folders">☰</button>
+    <a class="brand" href="/" data-route="">joshymedia</a>
+    <nav>
+      <a href="/gallery" data-route="gallery" data-nav="gallery">gallery</a>
+      <a href="/projects" data-route="projects" data-nav="projects">projects</a>
+      <a href="/contact" data-route="contact" data-nav="contact">contact</a>
+    </nav>
+    <span class="spacer"></span>
+    <button class="theme-btn" id="themeBtn" title="light / dark (t)"></button>
+    <div class="modes" id="modes">
+      <button data-mode="grid" title="contact sheet (g)">
+        <svg viewBox="0 0 14 14"><rect x="0" y="0" width="4" height="4"/><rect x="5" y="0" width="4" height="4"/><rect x="10" y="0" width="4" height="4"/><rect x="0" y="5" width="4" height="4"/><rect x="5" y="5" width="4" height="4"/><rect x="10" y="5" width="4" height="4"/><rect x="0" y="10" width="4" height="4"/><rect x="5" y="10" width="4" height="4"/><rect x="10" y="10" width="4" height="4"/></svg>
+      </button>
+      <button data-mode="view" title="viewer (v)">
+        <svg viewBox="0 0 14 14"><rect x="0" y="0" width="14" height="9"/><rect x="0" y="10" width="4" height="4"/><rect x="5" y="10" width="4" height="4"/><rect x="10" y="10" width="4" height="4"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="app">
+    <aside class="side">
+      <div class="tree" id="tree"></div>
+      <div class="collection">
+        <h3>collection</h3>
+        <div id="collection"></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="toolbar">
+        <span class="path" id="path"></span>
+        <span class="spacer"></span>
+        <button id="fullBtn" class="hide-sm" title="full screen (f)">full screen</button>
+      </div>
+
+      <!-- viewer mode -->
+      <div class="viewer-row" id="viewerRow">
+        <div class="stage" id="stage">
+          <button class="nav-btn prev" id="prev" aria-label="previous">‹</button>
+          <img id="photo" alt="">
+          <button class="nav-btn next" id="next" aria-label="next">›</button>
+          <div class="pager" id="pager" aria-hidden="true"></div>
+        </div>
+        <aside class="details" id="details"></aside>
+      </div>
+      <div class="infobar" id="infobar">
+        <span class="file" id="file"></span>
+        <span><span class="stars">★★★★★</span><span class="dots"><i style="background:#7a1f1f"></i><i style="background:#6b5a1d"></i><i style="background:#1f5a2a"></i><i style="background:#1f3f7a"></i></span></span>
+      </div>
+
+      <!-- contact sheet mode (the gallery) -->
+      <!-- projects: folders -->
+      <div class="folders-view hidden" id="foldersView">
+        <div class="sheet-head" id="foldersHead"></div>
+        <div class="folders" id="folders"></div>
+      </div>
+
+      <div class="sheet hidden" id="sheet">
+        <div class="sheet-head" id="sheetHead"></div>
+        <div class="sheet-grid" id="sheetGrid"></div>
+      </div>
+
+      <!-- contact -->
+      <!-- contact: plain text, like the previous site -->
+      <div class="contact hidden" id="about">
+        <section>
+          <p class="label">contact</p>
+          <ul>
+            <li><a href="mailto:contact@joshymedia.com">contact@joshymedia.com</a></li>
+            <li>based in los angeles, ca</li>
+            <li><a href="https://instagram.com/j6shy" target="_blank" rel="noopener">instagram</a></li>
+          </ul>
+        </section>
+        <section>
+          <p class="label">about me</p>
+          <p>joshy is a los angeles-based creative director and photographer working across fashion, culture, and commercial imagery. his work brings together a considered visual approach with an instinct for creating imagery that feels distinct, intentional, and culturally relevant.</p>
+          <p>working with brands, musicians, and independent creatives, he moves between concept development, direction, and production, shaping visual identities and translating ideas into compelling visual work.</p>
+        </section>
+      </div>
+
+      <div class="strip" id="strip"></div>
+    </main>
+  </div>
+
+  <script src="images/manifest.js"></script>
+  <script src="projects.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

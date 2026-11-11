@@ -4,8 +4,14 @@
 //
 //  Each project is one { ... } block. The fields:
 //
-//    id           Short name used in the link (index.html#p=ID).
-//                 Lowercase, no spaces. Must be different for every project.
+//    id           Short internal name. Lowercase, no spaces. Must be different
+//                 for every project.
+//    path         (optional) The project's web address after /projects/,
+//                 e.g. "thevuze" gives joshymedia.com/projects/thevuze.
+//                 Leave it out and it's made from the client (and title):
+//                 ditch's "ruin" becomes /projects/ditch/ruin.
+//                 After adding a project or changing a path, run
+//                 python tools/build-pages.py (see README.md).
 //    client       Client name. Shown on the projects page and project page.
 //    title        Project name. Only shown when a client has 2+ projects
 //                 (e.g. "ditch — ruin"). For one-project clients just the
@@ -49,6 +55,7 @@
 window.PROJECTS = [
   {
     id: "vuze-magazine",
+    path: "thevuze",
     client: "VUZE Magazine",
     title: "",
     role: "photographer",
