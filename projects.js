@@ -81,7 +81,7 @@ window.PROJECTS = [
     title: "ruin",
     role: "photographer",
     year: "2026",
-    description: "[short description of the project goes here.]",
+    description: "a thematical 'ruined' lookbook for @ditch to showcase their ruin collection.",
     folder: "ditch/ruin",
     cover: "cover",
     crop: { "1": "36% 50%", "2": "44% 50%", "3": "50% 100%", "4": "52% 50%", "5": "92% 50%" },
