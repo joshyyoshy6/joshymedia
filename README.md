@@ -31,6 +31,7 @@ its client and title. Old links (`index.html#p=...`, `project.html?p=...`, `cont
 | `index.html` | The page itself: menu, sidebar, contact / about me text | Yes, for the contact / about me text (search for "about me"), then run `python tools/build-pages.py` |
 | `app.js`, `app.css` | How the site works and looks | When changing the design |
 | `gallery.html`, `projects.html`, `contact.html`, `project.html`, `404.html`, `projects/` | Copies of `index.html`, one per address, made by `tools/build-pages.py` | **No**: edit `index.html`, then rerun the script |
+| `og-image.jpg` | The picture shown when someone shares a joshymedia.com link (a "gallery" folder of photos) | Replace it to change the preview |
 | `style.css` | Styles for the crop tool | No |
 | `images/` | Web-optimized copies of your photos (made by the script) | No |
 | `images/manifest.js` | Auto-generated list of photos | No |

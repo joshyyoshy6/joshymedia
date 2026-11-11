@@ -20,6 +20,19 @@
     return (MANIFEST[p.folder] || []).map(function (img) { return { p: p, img: img }; });
   }
   function short(p) { return p.title ? p.title : p.client; }
+  function nameOf(p) { return p.title ? p.client + " — " + p.title : p.client; }
+  function setTitle(t) { document.title = (t ? t + " — joshymedia" : "joshymedia").toLowerCase(); }
+  // previews fade in once loaded instead of popping in
+  function fadeIn(img) {
+    img.classList.add("fade-in");
+    function shown() { img.classList.add("loaded"); }
+    img.addEventListener("load", shown, { once: true });
+    img.addEventListener("error", shown, { once: true });
+  }
+  function isPhone() { return window.innerWidth <= 760; }
+  // zoom is a desktop extra: mouse/trackpad only, never on phones or touch screens
+  var FINE_POINTER = !!(window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches);
+  function canZoom() { return FINE_POINTER && !isPhone(); }
   function fileName(p, img) {
     var n = img.name === "cover" ? "00" : ("0" + img.name).slice(-2);
     return (p.id.replace(/-/g, "_") + "_" + n + ".webp").toUpperCase();
@@ -198,21 +211,37 @@
     var im = el("img");
     im.loading = "lazy";
     im.width = item.img.w; im.height = item.img.h; // keeps the shape before it loads
+    fadeIn(im);
     im.src = src(item.p, item.img.name, "small");
     im.alt = "";
     f.appendChild(im);
     b.appendChild(f);
     // previews show only the photo (no file names), on every screen size
     b.setAttribute("aria-label", item.p.title ? item.p.client + " — " + item.p.title : item.p.client);
-    b.addEventListener("click", function () { setHash(state.folder, "view", i); });
+    b.addEventListener("click", function () { setHash(state.folder, "view", i, state.mode === "view"); });
     return b;
   }
 
   var wasViewing = false; // was the large-photo view already on screen?
-  function render() {
+  // Scroll positions of the grids / folders, so Back returns you to where you were.
+  var scrollMem = {}, lastKey = null;
+  function scrollerFor(mode) {
+    return mode === "grid" ? $("sheet") : mode === "folders" ? $("foldersView") : mode === "contact" ? $("about") : null;
+  }
+  function render(fromHistory) {
+    if (lastKey) {
+      var leaving = scrollerFor(lastKey.split("|")[1]);
+      if (leaving && !leaving.classList.contains("hidden")) scrollMem[lastKey] = leaving.scrollTop;
+    }
     var viewingBefore = wasViewing;
     wasViewing = false;
     readLocation();
+    var key = state.folder + "|" + state.mode;
+    function restoreScroll() {
+      var sc = scrollerFor(state.mode);
+      if (sc && key !== lastKey) sc.scrollTop = fromHistory === true ? (scrollMem[key] || 0) : 0;
+      lastKey = key;
+    }
     document.body.classList.remove("drawer");
 
     list = state.folder === "gallery" ? galleryList : (byId[state.folder] ? photosOf(byId[state.folder]) : []);
@@ -250,11 +279,11 @@
       : "projects \\ " + (p.title ? p.client + " \\ " + p.title : p.client);
     $("path").textContent = "joshymedia \\ " + where;
 
-    if (isFolders) { renderFolders(); return; }
-    if (isContact) { document.title = "contact — joshymedia"; return; }
-
+    if (isFolders) { renderFolders(); restoreScroll(); return; }
+    if (isContact) { setTitle("contact"); restoreScroll(); return; }
 
     if (isGrid) renderSheet(p); else { renderViewer(viewingBefore); wasViewing = true; }
+    restoreScroll();
   }
 
   // Justified rows: fill each row until it is about TARGET px tall, then scale the
@@ -305,9 +334,10 @@
       var icon = el("span", "ficon");
       icon.appendChild(el("span", "back"));
       var im = el("img");
-      im.src = src(p, p.cover || "cover", "small");
       im.alt = "";
       im.loading = "lazy";
+      fadeIn(im);
+      im.src = src(p, p.cover || "cover", "small");
       var paper = el("span", "paper");
       paper.appendChild(im);
       icon.appendChild(paper);
@@ -317,7 +347,7 @@
       a.appendChild(el("span", "fmeta", p.year));
       box.appendChild(a);
     });
-    document.title = (client || "projects") + " — joshymedia";
+    setTitle(client || "projects");
   }
 
   // project name, description and credits: above the grid, beside the large photo
@@ -353,7 +383,7 @@
     var grid = $("sheetGrid");
     grid.innerHTML = "";
     layoutSheet();
-    document.title = (p ? short(p) : "gallery") + " — joshymedia";
+    setTitle(p ? nameOf(p) : "gallery");
   }
 
   var viewToken = 0;
@@ -429,7 +459,7 @@
         img.style.transform = "";
         img.style.opacity = "";
       }
-      swapIn(src(item.p, item.img.name, "large"), function () { updateZoom(); });
+      if (!isPhone()) swapIn(src(item.p, item.img.name, "large")); // phones: the lighter version is sharp enough
     });
 
     // dots under the photo (none when there are too many photos to show as dots)
@@ -446,22 +476,26 @@
     $("file").textContent = fileName(item.p, item.img);
     renderDetails(item.p);
 
-    var strip = $("strip");
-    strip.innerHTML = "";
-    list.forEach(function (it, i) {
-      var t = makeThumb(it, i, false);
-      if (i === state.index) t.classList.add("on");
-      strip.appendChild(t);
-    });
-    var on = strip.querySelector(".on");
-    if (on) strip.scrollLeft = on.offsetLeft - strip.clientWidth / 2 + on.clientWidth / 2;
+    var strip = $("strip"), fresh = strip.dataset.key !== state.folder;
+    if (fresh) {
+      strip.innerHTML = "";
+      list.forEach(function (it, i) { strip.appendChild(makeThumb(it, i, false)); });
+      strip.dataset.key = state.folder;
+    }
+    Array.prototype.forEach.call(strip.children, function (t, i) { t.classList.toggle("on", i === state.index); });
+    var on = strip.children[state.index];
+    if (on) {
+      var left = on.offsetLeft - strip.clientWidth / 2 + on.clientWidth / 2;
+      if (fresh || reduceMotion || !strip.scrollTo) strip.scrollLeft = left;
+      else strip.scrollTo({ left: left, behavior: "smooth" });
+    }
 
     // preload neighbours
     [state.index + 1, state.index - 1].forEach(function (j) {
       var n = list[(j + list.length) % list.length];
-      if (n) new Image().src = src(n.p, n.img.name, "large");
+      if (n) new Image().src = src(n.p, n.img.name, isPhone() ? "small" : "large");
     });
-    document.title = fileName(item.p, item.img) + " — joshymedia";
+    setTitle(nameOf(item.p));
   }
 
   // Size the large photo so it always runs edge to edge left and right, with a
@@ -473,10 +507,14 @@
   // of most of the landscapes), sized to the screen. Landscapes fill its width
   // edge to edge; portraits sit centered in it with dark space beside them.
   var FRAME_RATIO = 3 / 2;
+  var fitted = "";
   function fitPhoto() {
-    resetZoom();
     var img = $("photo"), stage = $("stage"), row = $("viewerRow");
     var item = list[state.index];
+    var sizeKey = [state.mode, state.folder, state.index, window.innerWidth, window.innerHeight, !!document.fullscreenElement].join(",");
+    if (sizeKey === fitted && state.mode === "view") return; // nothing changed: keep any zoom
+    fitted = sizeKey;
+    resetZoom();
     img.style.width = img.style.height = "";
     stage.style.flex = stage.style.height = stage.style.alignSelf = "";
     if (!item || state.mode !== "view" || document.fullscreenElement) return;
@@ -511,7 +549,6 @@
   // ---------- events ----------
   $("prev").addEventListener("click", function () { step(-1); });
   $("next").addEventListener("click", function () { step(1); });
-  $("photo").addEventListener("load", updateZoom);
   window.addEventListener("resize", updateZoom);
   document.addEventListener("fullscreenchange", updateZoom);
   var rz;
@@ -528,6 +565,8 @@
     else if ($("stage").requestFullscreen) $("stage").requestFullscreen();
   });
   document.addEventListener("keydown", function (e) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return; // browser shortcuts (ctrl+f, alt+left ...) stay the browser's
+    if (e.key === "Escape" && zoom.z > 1) { resetZoom(); return; }
     if (e.key === "ArrowRight") step(1);
     else if (e.key === "ArrowLeft") step(-1);
     else if (state.mode === "folders") return;
@@ -599,8 +638,13 @@
   }
   function resetZoom() { zoom.z = 1; applyZoom(); }
   // zoom to level nz, keeping the point (px, py) of the frame where it is
+  // never zoom past the photo's real detail (the sharp copy is 2400px), so it stays crisp
+  function maxZoom() {
+    var it = list[state.index], w = $("photoBox").clientWidth;
+    return it && w ? Math.max(1, Math.min(MAX_ZOOM, it.img.w / w)) : 1;
+  }
   function zoomAt(nz, px, py) {
-    nz = Math.min(MAX_ZOOM, Math.max(1, nz));
+    nz = Math.min(maxZoom(), Math.max(1, nz));
     var ix = (px - zoom.tx) / zoom.z, iy = (py - zoom.ty) / zoom.z;
     zoom.tx = px - ix * nz; zoom.ty = py - iy * nz; zoom.z = nz;
     applyZoom();
@@ -610,7 +654,7 @@
     return [Math.min(r.width, Math.max(0, e.clientX - r.left)), Math.min(r.height, Math.max(0, e.clientY - r.top))];
   }
   $("stage").addEventListener("wheel", function (e) {
-    if (!e.ctrlKey || state.mode !== "view") return; // plain scrolling stays normal
+    if (!e.ctrlKey || state.mode !== "view" || !canZoom()) return; // plain scrolling stays normal
     e.preventDefault(); // stop the browser zooming the whole page
     var dy = e.deltaY * (e.deltaMode === 1 ? 33 : e.deltaMode === 2 ? 400 : 1);
     var p = framePoint(e);
@@ -618,6 +662,7 @@
   }, { passive: false });
   // double-click: zoom in there, or back out
   $("photoBox").addEventListener("dblclick", function (e) {
+    if (!canZoom()) return;
     if (zoom.z > 1) resetZoom();
     else { var p = framePoint(e); zoomAt(2.5, p[0], p[1]); }
   });
@@ -658,8 +703,9 @@
     navi.addEventListener("pointercancel", function () { down = false; });
   })();
 
-  window.addEventListener("hashchange", render);
-  window.addEventListener("popstate", render);
+  window.addEventListener("hashchange", function () { render(true); });
+  window.addEventListener("popstate", function () { render(true); });
+  $("scrim").addEventListener("click", function () { document.body.classList.remove("drawer"); });
   // links inside the site switch views without reloading the page
   document.addEventListener("click", function (e) {
     var a = e.target.closest && e.target.closest("a[data-route]");
@@ -680,7 +726,7 @@
     themeLabel();
   }
   $("themeBtn").addEventListener("click", toggleTheme);
-  document.addEventListener("keydown", function (e) { if (e.key === "t") toggleTheme(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "t" && !e.ctrlKey && !e.metaKey && !e.altKey) toggleTheme(); });
   themeLabel();
 
   buildSidebar();
