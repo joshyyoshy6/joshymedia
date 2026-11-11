@@ -221,6 +221,8 @@
     .nav-btn.prev { left: 0; }
     .nav-btn.next { right: 0; }
     .pager { display: none; }
+    .stage:fullscreen { width: 100vw; height: 100vh; padding: 0; background: #000; overflow: hidden; }
+    .stage:fullscreen img { max-width: 100vw; max-height: 100vh; width: auto; height: auto; }
     /* arrows: faint round buttons over the photo's edges */
     .nav-btn { width: 56px; color: #fff; font-size: 0; opacity: .75; transition: opacity 150ms; }
     .nav-btn:hover { opacity: 1; }
@@ -889,17 +891,41 @@
       document.title = (p ? short(p) : "gallery") + " — joshymedia";
     }
 
+    var viewToken = 0;
     function renderViewer() {
       var item = list[state.index];
       if (!item) return;
       var img = $("photo");
+      // Only one photo is ever on screen: the next photo is fully loaded and
+      // decoded off-screen first, then swapped in all at once. If you press the
+      // arrows quickly, only the newest photo gets shown.
+      var token = ++viewToken;
+      var fromSide = enterFrom; // set by a swipe: slide the new photo in from that side
+      enterFrom = 0;
+      if (!fromSide) { img.style.transition = "none"; img.style.transform = ""; img.style.opacity = ""; }
       img.classList.add("loading");
-      img.src = src(item.p, item.img.name, "small");
-      var big = new Image();
-      big.onload = function () {
-        if (list[state.index] === item) { img.src = big.src; img.classList.remove("loading"); updateZoom(); }
-      };
-      big.src = src(item.p, item.img.name, "large");
+      function swapIn(url, done) {
+        var next = new Image();
+        next.src = url;
+        (next.decode ? next.decode() : Promise.resolve()).catch(function () {}).then(function () {
+          if (token !== viewToken) return; // a newer photo was asked for
+          img.src = url;
+          img.width = item.img.w; img.height = item.img.h;
+          if (done) done();
+        });
+      }
+      swapIn(src(item.p, item.img.name, "small"), function () {
+        if (fromSide) {
+          img.style.transition = "none";
+          img.style.transform = "translateX(" + fromSide * 60 + "px)";
+          img.style.opacity = "0";
+          void img.offsetWidth;
+          img.style.transition = "transform 220ms ease, opacity 220ms ease";
+          img.style.transform = "";
+          img.style.opacity = "";
+        }
+        swapIn(src(item.p, item.img.name, "large"), function () { img.classList.remove("loading"); updateZoom(); });
+      });
 
       // dots under the photo (a counter instead when there are lots of photos)
       var pager = $("pager");
@@ -910,17 +936,6 @@
         pager.textContent = (state.index + 1) + " / " + list.length;
       }
 
-      // after a swipe, slide the new photo in from the side it came from
-      if (enterFrom) {
-        img.style.transition = "none";
-        img.style.transform = "translateX(" + enterFrom * 60 + "px)";
-        img.style.opacity = "0";
-        void img.offsetWidth;
-        img.style.transition = "transform 220ms ease, opacity 220ms ease";
-        img.style.transform = "";
-        img.style.opacity = "";
-        enterFrom = 0;
-      }
       img.dataset.w = item.img.w;
 
       $("file").textContent = fileName(item.p, item.img);
