@@ -24,7 +24,7 @@
       --edge-2: #6a6a6a;
       --menu-h: 30px;
       --tool-h: 34px;
-      --strip-h: 148px;
+      --strip-h: 104px;
       --side-w: 260px;
     }
 
@@ -220,7 +220,15 @@
 
     .nav-btn.prev { left: 0; }
     .nav-btn.next { right: 0; }
-    .pager { display: none; }
+    /* dots under the photo show where you are, on every screen size */
+    .stage { padding-bottom: 26px; }
+    .pager {
+      position: absolute; left: 0; right: 0; bottom: 10px;
+      display: flex; justify-content: center; align-items: center; gap: 6px;
+      font-size: 11px; color: var(--muted);
+    }
+    .pager i { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); opacity: .45; transition: opacity 200ms, transform 200ms; }
+    .pager i.on { opacity: 1; background: var(--strong); transform: scale(1.15); }
     .stage:fullscreen { width: 100vw; height: 100vh; padding: 0; background: #000; overflow: hidden; }
     .stage:fullscreen img { max-width: 100vw; max-height: 100vh; width: auto; height: auto; }
     /* arrows: faint round buttons over the photo's edges */
@@ -427,12 +435,11 @@
       .viewer-row { flex-direction: column; overflow: auto; }
       .viewer-row .stage { flex: none; }
       .stage img { max-width: 100%; max-height: 72vh; width: auto; height: auto; }
-      .details { width: auto; border-left: 0; border-top: 1px solid var(--line); }
+      .details { width: auto; flex: 1 0 auto; border-left: 0; border-top: 1px solid var(--line); }
     }
 
     @media (max-width: 760px) {
-      .pager { display: flex; }
-      :root { --strip-h: 112px; }
+      :root { --strip-h: 84px; }
       .app { grid-template-columns: 1fr; }
       .menu-folders { display: block; color: var(--text); }
       .menubar nav { display: none; }
@@ -449,13 +456,6 @@
       /* phones: swipe the photo; faint arrows + dots show there's more */
       .stage { touch-action: pan-y; overflow: hidden; padding-bottom: 26px; }
       .stage img { max-height: 62vh; }
-      .pager {
-        position: absolute; left: 0; right: 0; bottom: 10px;
-        display: flex; justify-content: center; align-items: center; gap: 6px;
-        font-size: 11px; color: var(--muted);
-      }
-      .pager i { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); opacity: .45; transition: opacity 200ms, transform 200ms; }
-      .pager i.on { opacity: 1; background: var(--strong); transform: scale(1.15); }
       .infobar { flex-wrap: wrap; gap: 4px 16px; white-space: normal; }
       .infobar .desc { flex-basis: 100%; white-space: normal; }
       .statusbar .hide-sm, .toolbar .hide-sm { display: none; }
@@ -512,7 +512,7 @@
     <aside class="side">
       <div class="tree" id="tree"></div>
       <div class="collection">
-        <h3>collection <span id="collTotal"></span></h3>
+        <h3>collection</h3>
         <div id="collection"></div>
       </div>
     </aside>
@@ -521,7 +521,6 @@
       <div class="toolbar">
         <span class="path" id="path"></span>
         <span class="spacer"></span>
-        <span class="hide-sm" id="zoomWrap">zoom <span class="zoom" id="zoom">—</span></span>
         <button id="fullBtn" class="hide-sm" title="full screen (f)">full screen</button>
       </div>
 
@@ -570,12 +569,6 @@
         </section>
       </div>
 
-      <div class="statusbar" id="statusbar">
-        <span id="selected"></span>
-        <span class="hide-sm" id="meta"></span>
-        <span class="pill hide-sm">five stars</span>
-        <span class="pill hide-sm">all</span>
-      </div>
       <div class="strip" id="strip"></div>
     </main>
   </div>
@@ -690,7 +683,7 @@
     function buildSidebar() {
       var tree = $("tree");
       var root = treeFolder(tree, "joshymedia", "#gallery", 0, {});
-      root.appendChild(treeLink("gallery", "#gallery", 1, { count: galleryList.length, key: "gallery" }));
+      root.appendChild(treeLink("gallery", "#gallery", 1, { key: "gallery" }));
       var projects = treeFolder(root, "projects", "#projects", 1, { key: "projects" });
       // clients with 2+ projects become a folder of their own
       clientsList().forEach(function (c) {
@@ -698,22 +691,21 @@
         if (ps.length > 1) {
           var sub = treeFolder(projects, c, "#client=" + encodeURIComponent(c), 2, { key: "client:" + c });
           ps.forEach(function (p) {
-            sub.appendChild(treeLink(p.title, "#p=" + p.id, 3, { count: photosOf(p).length, key: p.id }));
+            sub.appendChild(treeLink(p.title, "#p=" + p.id, 3, { key: p.id }));
           });
         } else {
-          projects.appendChild(treeLink(c, "#p=" + ps[0].id, 2, { count: photosOf(ps[0]).length, key: ps[0].id }));
+          projects.appendChild(treeLink(c, "#p=" + ps[0].id, 2, { key: ps[0].id }));
         }
       });
       root.appendChild(treeLink("contact", "#contact", 1, { key: "contact" }));
 
       var coll = $("collection");
       PROJECTS.forEach(function (p) {
-        var a = el("a", null, p.year + " — " + (p.title ? p.client + " " + p.title : p.client) + " (" + photosOf(p).length + ")");
+        var a = el("a", null, p.year + " — " + (p.title ? p.client + " " + p.title : p.client));
         a.href = "#p=" + p.id;
         a.dataset.key = p.id;
         coll.appendChild(a);
       });
-      $("collTotal").textContent = total + " files";
     }
 
     // ---------- rendering ----------
@@ -727,11 +719,7 @@
       im.alt = "";
       f.appendChild(im);
       b.appendChild(f);
-      // grids show only the photos; the filmstrip under the viewer gets a file name
-      if (!big) {
-        b.appendChild(el("span", "stars", "★★★★★"));
-        b.appendChild(el("span", "name", fileName(item.p, item.img)));
-      }
+      // previews show only the photo (no file names), on every screen size
       b.setAttribute("aria-label", item.p.title ? item.p.client + " — " + item.p.title : item.p.client);
       b.addEventListener("click", function () { setHash(state.folder, "view", i); });
       return b;
@@ -766,8 +754,6 @@
       $("sheet").classList.toggle("hidden", !isGrid);
       $("about").classList.toggle("hidden", state.mode !== "contact");
       $("strip").classList.toggle("hidden", isGrid || isContact);
-      $("statusbar").classList.toggle("hidden", state.mode === "contact" || state.mode === "view"); // no "files selected" line under the viewer
-      $("zoomWrap").classList.toggle("hidden", isGrid || isContact);
       $("fullBtn").classList.toggle("hidden", isGrid || isContact);
 
       var p = byId[state.folder];
@@ -781,10 +767,6 @@
       if (isFolders) { renderFolders(); return; }
       if (isContact) { document.title = "contact — joshymedia"; return; }
 
-      $("selected").textContent = isGrid
-        ? list.length + " files"
-        : "files selected : " + ("0000" + (state.index + 1)).slice(-5) + "   " + (state.index + 1) + " / " + list.length + " files";
-      $("meta").textContent = p ? "role: " + p.role + "   year: " + p.year : "all projects";
 
       if (isGrid) renderSheet(p); else renderViewer();
     }
@@ -847,11 +829,9 @@
         icon.appendChild(el("span", "front"));
         a.appendChild(icon);
         a.appendChild(el("span", "fname", client ? p.title : (p.title ? p.client + " — " + p.title : p.client)));
-        a.appendChild(el("span", "fmeta", photosOf(p).length + " items · " + p.year));
+        a.appendChild(el("span", "fmeta", p.year));
         box.appendChild(a);
       });
-      $("selected").textContent = ps.length + " folders";
-      $("meta").textContent = "";
       document.title = (client || "projects") + " — joshymedia";
     }
 
@@ -962,7 +942,7 @@
     function updateZoom() {
       var img = $("photo");
       var w = parseInt(img.dataset.w, 10);
-      if (w && img.clientWidth) $("zoom").textContent = Math.round((img.clientWidth / w) * 100) + "%";
+      // (zoom readout removed)
     }
 
     function step(d) {
