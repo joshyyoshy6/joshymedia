@@ -15,7 +15,7 @@
   --edge-2: #6a6a6a;
   --menu-h: 30px;
   --tool-h: 34px;
-  --strip-h: 104px;
+  --strip-h: clamp(96px, 13vh, 150px); /* grows a little on taller screens */
   --side-w: 260px;
 }
 
@@ -204,8 +204,9 @@ img { display: block; }
 }
 .stage img.loading { opacity: 0.6; }
 .nav-btn {
-  position: absolute; top: 0; bottom: 0; width: 56px;
-  display: grid; place-items: center;
+  /* spans the photo's height (inside the frame's border), arrow in the middle */
+  position: absolute; top: 20px; bottom: 20px; width: 56px;
+  display: flex; align-items: center; justify-content: center;
   color: var(--muted); font-size: 22px;
 }
 
@@ -271,8 +272,9 @@ img { display: block; }
   flex: none;
   display: flex;
   gap: 10px;
-  padding: 10px 12px;
+  padding: 10px 12px 0;
   overflow-x: auto;
+  overflow-y: hidden; /* scrolls left and right only */
   background: var(--panel);
   scrollbar-color: var(--edge-2) transparent;
 }
@@ -299,7 +301,7 @@ img { display: block; }
 
 /* filmstrip: each preview is the photo's own shape, filled edge to edge */
 .strip .thumb { width: auto; }
-.strip .thumb .frame { width: auto; height: 84px; padding: 0; display: block; }
+.strip .thumb .frame { width: auto; height: calc(var(--strip-h) - 26px); padding: 0; display: block; } /* room left for the scrollbar */
 .strip .thumb img { height: 100%; width: auto; max-width: none; max-height: none; }
 .strip .thumb .name { width: 0; min-width: 100%; text-align: center; }
 
@@ -432,6 +434,7 @@ img { display: block; }
 
 @media (max-width: 760px) {
   :root { --strip-h: 84px; }
+  .nav-btn { top: 12px; bottom: 22px; }
   .app { grid-template-columns: 1fr; }
   .menu-folders { display: block; color: var(--text); }
   .menubar nav { display: none; }
@@ -455,7 +458,7 @@ img { display: block; }
   .thumb .frame { width: 100px; height: 64px; }
   .thumb img { max-height: 54px; }
   .strip .thumb { width: auto; }
-  .strip .thumb .frame { width: auto; height: 64px; }
+  .strip .thumb .frame { width: auto; height: calc(var(--strip-h) - 20px); }
   .strip .thumb img { max-height: none; }
   .strip .thumb .stars, .strip .thumb .name { display: none; }
   .sheet { padding: 12px; }
