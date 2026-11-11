@@ -208,7 +208,10 @@
     return b;
   }
 
+  var wasViewing = false; // was the large-photo view already on screen?
   function render() {
+    var viewingBefore = wasViewing;
+    wasViewing = false;
     readLocation();
     document.body.classList.remove("drawer");
 
@@ -251,7 +254,7 @@
     if (isContact) { document.title = "contact — joshymedia"; return; }
 
 
-    if (isGrid) renderSheet(p); else renderViewer();
+    if (isGrid) renderSheet(p); else { renderViewer(viewingBefore); wasViewing = true; }
   }
 
   // Justified rows: fill each row until it is about TARGET px tall, then scale the
@@ -354,10 +357,47 @@
   }
 
   var viewToken = 0;
-  function renderViewer() {
+  // ---------- crossfade between photos ----------
+  var FADE_MS = 160;
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // A copy of the photo now on screen, laid exactly over it, so the next photo
+  // can fade in underneath while this one fades out.
+  function makeGhost() {
+    var stage = $("stage"), img = $("photo");
+    var old = stage.querySelector(".fade-ghost");
+    if (old && img.style.opacity === "0") return old; // still waiting on the last change: keep that one
+    if (old) old.remove();
+    var r = img.getBoundingClientRect(), sr = stage.getBoundingClientRect();
+    if (!img.naturalWidth || !r.width || zoom.z > 1) return null;
+    var g = new Image();
+    g.src = img.src;
+    g.className = "fade-ghost";
+    g.alt = "";
+    g.style.cssText = "position:absolute;z-index:1;pointer-events:none;max-width:none;max-height:none;" +
+      "left:" + (r.left - sr.left) + "px;top:" + (r.top - sr.top) + "px;width:" + r.width + "px;height:" + r.height + "px;" +
+      "opacity:" + (getComputedStyle(img).opacity || 1) + ";transition:opacity " + FADE_MS + "ms ease";
+    stage.appendChild(g);
+    return g;
+  }
+  function crossfade(ghost) {
+    var img = $("photo");
+    img.style.transition = "none";
+    img.style.opacity = "0";
+    void img.offsetWidth;
+    img.style.transition = "opacity " + FADE_MS + "ms ease";
+    img.style.opacity = "";
+    if (ghost) {
+      ghost.style.opacity = "0";
+      setTimeout(function () { ghost.remove(); }, FADE_MS + 60);
+    }
+  }
+
+  function renderViewer(viewingBefore) {
     var item = list[state.index];
     if (!item) return;
     var img = $("photo");
+    // stepping between photos: keep the current one on screen until the next is ready
+    var ghost = viewingBefore && !enterFrom && !reduceMotion ? makeGhost() : null;
     resetZoom();
     $("naviImg").src = src(item.p, item.img.name, "small");
     // Only one photo is ever on screen: the next photo is fully loaded and
@@ -367,8 +407,7 @@
     fitPhoto();
     var fromSide = enterFrom; // set by a swipe: slide the new photo in from that side
     enterFrom = 0;
-    if (!fromSide) { img.style.transition = "none"; img.style.transform = ""; img.style.opacity = ""; }
-    img.classList.add("loading");
+    if (!fromSide) { img.style.transition = "none"; img.style.transform = ""; img.style.opacity = ghost ? "0" : ""; }
     function swapIn(url, done) {
       var next = new Image();
       next.src = url;
@@ -380,6 +419,7 @@
       });
     }
     swapIn(src(item.p, item.img.name, "small"), function () {
+      if (ghost) crossfade(ghost);
       if (fromSide) {
         img.style.transition = "none";
         img.style.transform = "translateX(" + fromSide * 60 + "px)";
@@ -389,7 +429,7 @@
         img.style.transform = "";
         img.style.opacity = "";
       }
-      swapIn(src(item.p, item.img.name, "large"), function () { img.classList.remove("loading"); updateZoom(); });
+      swapIn(src(item.p, item.img.name, "large"), function () { updateZoom(); });
     });
 
     // dots under the photo (none when there are too many photos to show as dots)
