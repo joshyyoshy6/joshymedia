@@ -751,7 +751,7 @@
       $("sheet").classList.toggle("hidden", !isGrid);
       $("about").classList.toggle("hidden", state.mode !== "contact");
       $("strip").classList.toggle("hidden", isGrid || isContact);
-      $("statusbar").classList.toggle("hidden", state.mode === "contact");
+      $("statusbar").classList.toggle("hidden", state.mode === "contact" || state.mode === "view"); // no "files selected" line under the viewer
       $("zoomWrap").classList.toggle("hidden", isGrid || isContact);
       $("fullBtn").classList.toggle("hidden", isGrid || isContact);
 
