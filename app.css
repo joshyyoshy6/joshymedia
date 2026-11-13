@@ -458,7 +458,16 @@ img { display: block; }
   :root { --strip-h: 84px; }
   .nav-btn { top: 12px; bottom: 22px; }
   .app { grid-template-columns: 1fr; }
-  .menu-folders { display: block; color: var(--text); }
+  /* phones: a taller top bar and a big, easy-to-hit menu button (44 x 44, from the screen edge) */
+  :root { --menu-h: 44px; }
+  .menubar { gap: 6px; padding-left: 0; }
+  .menu-folders {
+    display: flex; align-items: center; justify-content: center;
+    width: 48px; height: var(--menu-h);
+    color: var(--text); font-size: 20px; line-height: 1;
+    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  }
+  .menu-folders:active, body.drawer .menu-folders { color: var(--accent); }
   .menubar nav { display: none; }
   .side {
     position: fixed; z-index: 20;
