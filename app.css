@@ -20,17 +20,18 @@
 }
 
 :root[data-theme="light"] {
-  --bg: #f4f4f4;
-  --panel: #fbfbfb;
-  --panel-2: #ececec;
-  --line: #dcdcdc;
-  --stage: #fff;
-  --text: #222;
-  --muted: #8a8a8a;
-  --strong: #000;
-  --well: #f0f0f0;
-  --edge: #d6d6d6;
-  --edge-2: #a0a0a0;
+  /* soft off-whites (a hint of warmth) and soft black: gentler than pure white/black */
+  --bg: #f7f7f4;
+  --panel: #fafaf8;
+  --panel-2: #ededea;
+  --line: #e2e2de;
+  --stage: #f4f4f2;   /* the frame around the photos */
+  --text: #262624;
+  --muted: #8b8b87;
+  --strong: #1a1a1a;
+  --well: #f1f1ee;
+  --edge: #dadad6;
+  --edge-2: #a3a39f;
 }
 :root { color-scheme: dark; }
 :root[data-theme="light"] { color-scheme: light; }
