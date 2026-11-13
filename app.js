@@ -715,7 +715,7 @@
   });
   document.querySelectorAll("a[data-route]").forEach(function (a) { a.href = hrefFor(a.dataset.route); });
 
-  // light / dark toggle (dark by default, choice remembered on this device)
+  // light / dark toggle (light by default, choice remembered on this device)
   function themeLabel() {
     $("themeBtn").textContent = document.documentElement.dataset.theme === "light" ? "◐ dark" : "◑ light";
   }

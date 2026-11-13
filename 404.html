@@ -20,7 +20,10 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://joshymedia.com/og-image.jpg?v=2">
   <script>
-    try { var t = localStorage.getItem("jm-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+    // light mode by default; a visitor who switches to dark keeps dark on their device
+    var t = "light";
+    try { t = localStorage.getItem("jm-theme") || "light"; } catch (e) {}
+    document.documentElement.dataset.theme = t;
   </script>
   <link rel="stylesheet" href="app.css">
 </head>
