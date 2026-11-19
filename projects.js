@@ -125,6 +125,18 @@ window.PROJECTS = [
     crop: {},
     order: 5,
   },
+  {
+    id: "ezcodylee",
+    client: "ezcodylee",
+    title: "million",
+    role: "photographer",
+    year: "2026",
+    description: "single artwork for ezcodylee's \"MILLION\" via warner records.",
+    folder: "ezcodylee",
+    cover: "ez-cody-lee-joker-final-square-vignette-centered",
+    crop: {},
+    order: 6,
+  },
 ];
 
 // =====================================================================
@@ -144,6 +156,7 @@ window.GALLERY = [
   "ditch-bfcm-campaign/dsc05102",
   "ditch-2026-fw-campaign/6",
   "ditch-ruin/cover",
+  "ezcodylee/ez-cody-lee-joker-final",
   "ditch-bfcm-campaign/dsc05189",
   "ditch-2026-fw-campaign/cover",
   "ditch-ruin/3",

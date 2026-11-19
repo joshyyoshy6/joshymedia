@@ -102,6 +102,18 @@ window.IMAGE_MANIFEST = {
       "h": 1600
     }
   ],
+  "ezcodylee": [
+    {
+      "name": "ez-cody-lee-joker-final",
+      "w": 2400,
+      "h": 1600
+    },
+    {
+      "name": "ez-cody-lee-joker-final-square-vignette-centered",
+      "w": 2400,
+      "h": 2400
+    }
+  ],
   "sukiibaby": [
     {
       "name": "cover",
