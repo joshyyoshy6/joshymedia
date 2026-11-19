@@ -38,6 +38,33 @@ window.IMAGE_MANIFEST = {
       "h": 1600
     }
   ],
+  "ditch/bfcm-campaign": [
+    {
+      "name": "dsc04778",
+      "w": 2400,
+      "h": 1600
+    },
+    {
+      "name": "dsc05044",
+      "w": 2400,
+      "h": 1600
+    },
+    {
+      "name": "dsc05102",
+      "w": 2400,
+      "h": 1600
+    },
+    {
+      "name": "dsc05189",
+      "w": 2400,
+      "h": 1600
+    },
+    {
+      "name": "dsc05457",
+      "w": 2400,
+      "h": 1600
+    }
+  ],
   "ditch/ruin": [
     {
       "name": "cover",

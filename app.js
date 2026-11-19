@@ -16,8 +16,12 @@
   // would otherwise look for photos in the wrong place); plain relative when opened from disk
   var FILES = location.protocol === "file:" ? "" : "/";
   function src(p, name, size) { return FILES + "images/" + p.folder + "/" + name + "-" + size + ".webp"; }
+  // a project's photos, starting with its cover (projects.js "cover"), then the rest in folder order
   function photosOf(p) {
-    return (MANIFEST[p.folder] || []).map(function (img) { return { p: p, img: img }; });
+    var imgs = (MANIFEST[p.folder] || []).slice();
+    var c = imgs.findIndex(function (img) { return img.name === (p.cover || "cover"); });
+    if (c > 0) imgs.unshift(imgs.splice(c, 1)[0]);
+    return imgs.map(function (img) { return { p: p, img: img }; });
   }
   function short(p) { return p.title ? p.title : p.client; }
   function nameOf(p) { return p.title ? p.client + " — " + p.title : p.client; }

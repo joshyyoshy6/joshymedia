@@ -4,3 +4,10 @@ index-old.html
 
 # local tool settings
 .claude/
+
+# original photos accidentally dropped into images/ (originals belong in assets/)
+images/**/*.png
+images/**/*.jpg
+images/**/*.jpeg
+images/**/*.tif
+images/**/*.tiff
